@@ -1,15 +1,17 @@
-﻿using Application.Dtos;
-using Application.Queries.Dogs.GetById;
-using Domain.Models;
+﻿using Application.Queries.Birds.GetById;
 using Infrastructure.Database;
-using MediatR;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Test.DogTests.QueryTest
+namespace Test.BirdTests.QueryTest
 {
     [TestFixture]
-    public class GetDogByIdTests
+    public class GetBirdByIdTests
     {
-        private GetDogByIdQueryHandler _handler;
+        private GetBirdByIdQueryHandler _handler;
         private MockDatabase _mockDatabase;
 
         [SetUp]
@@ -17,34 +19,34 @@ namespace Test.DogTests.QueryTest
         {
             // Initialize the handler and mock database before each test
             _mockDatabase = new MockDatabase();
-            _handler = new GetDogByIdQueryHandler(_mockDatabase);
+            _handler = new GetBirdByIdQueryHandler(_mockDatabase);
 
 
         }
 
         [Test]
-        public async Task Handle_ValidId_ReturnsCorrectDog()
+        public async Task Handle_ValidId_ReturnsCorrectBird()
         {
             // Arrange
-            var dogId = new Guid("12345678-1234-5678-1234-567812345678");
+            var birdId = new Guid("11111111-1111-1111-1111-111111111111");
 
-            var query = new GetDogByIdQuery(dogId);
+            var query = new GetBirdByIdQuery(birdId);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
 
             // Assert
             Assert.NotNull(result);
-            Assert.That(result.Id, Is.EqualTo(dogId));
+            Assert.That(result.Id, Is.EqualTo(birdId));
         }
 
         [Test]
         public async Task Handle_InvalidId_ReturnsNull()
         {
             // Arrange
-            var invalidDogId = Guid.NewGuid();
+            var invalidBirdId = Guid.NewGuid();
 
-            var query = new GetDogByIdQuery(invalidDogId);
+            var query = new GetBirdByIdQuery(invalidBirdId);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
@@ -54,5 +56,5 @@ namespace Test.DogTests.QueryTest
         }
 
     }
-    
+
 }

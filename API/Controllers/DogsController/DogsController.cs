@@ -1,4 +1,7 @@
-﻿using Application.Commands.Dogs;
+﻿using Application.Commands.Cats.UpdateCat;
+using Application.Commands.Dogs;
+using Application.Commands.Dogs.AddDog;
+using Application.Commands.Dogs.DeleteDog;
 using Application.Commands.Dogs.UpdateDog;
 using Application.Dtos;
 using Application.Queries.Dogs.GetAll;
@@ -15,12 +18,14 @@ namespace API.Controllers.DogsController
     public class DogsController : ControllerBase
     {
         internal readonly IMediator _mediator;
+
+        // Konstruktor som tar in en instans av IMediator (MediatR används för att implementera CQRS-mönstret)
         public DogsController(IMediator mediator)
         {
             _mediator = mediator;
         }
 
-        // Get all dogs from database
+        // // Hämta alla hundar från databasen
         [HttpGet]
         [Route("getAllDogs")]
         public async Task<IActionResult> GetAllDogs()
@@ -29,7 +34,7 @@ namespace API.Controllers.DogsController
             //return Ok("GET ALL DOGS");
         }
 
-        // Get a dog by Id
+        //  // Hämta en hund med ett specifikt ID
         [HttpGet]
         [Route("getDogById/{dogId}")]
         public async Task<IActionResult> GetDogById(Guid dogId)
@@ -37,7 +42,7 @@ namespace API.Controllers.DogsController
             return Ok(await _mediator.Send(new GetDogByIdQuery(dogId)));
         }
 
-        // Create a new dog 
+        // // Skapa en ny hund
         [HttpPost]
         [Route("addNewDog")]
         public async Task<IActionResult> AddDog([FromBody] DogDto newDog)
@@ -47,13 +52,37 @@ namespace API.Controllers.DogsController
 
         // Update a specific dog
         [HttpPut]
-        [Route("updateDog/{updatedDogId}")]
-        public async Task<IActionResult> UpdateDog([FromBody] DogDto updatedDog, Guid updatedDogId)
+        [Route("updateDog/{dogId}")]
+        public async Task<IActionResult> UpdateDog(Guid dogId, [FromBody] DogDto updatedDog)
         {
-            return Ok(await _mediator.Send(new UpdateDogByIdCommand(updatedDog, updatedDogId)));
+            var command = new UpdateDogByIdCommand(updatedDog, dogId);
+            var result = await _mediator.Send(command);
+
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return NotFound("Dog not found.");
+            }
         }
 
-        // IMPLEMENT DELETE !!!!
+        // Radera en specifik hund, om tasken går igenom returnera "Dog deleted sucessfully" om inte "Dog not found".
+        [HttpDelete]
+        [Route("deleteDog/{dogId}")]
+        public async Task<IActionResult> DeleteDog(Guid dogId)
+        {
+            var success = await _mediator.Send(new DeleteDogCommand(dogId));
 
+            if (success)
+            {
+                return Ok("Dog deleted successfully.");
+            }
+            else
+            {
+                return NotFound("Dog not found.");
+            }
+        }
     }
 }
