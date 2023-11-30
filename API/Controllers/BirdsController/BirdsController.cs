@@ -18,42 +18,46 @@ namespace API.Controllers.BirdsController
     {
         internal readonly IMediator _mediator;
 
-        // Constructor that takes an instance of IMediator (MediatR is used to implement the CQRS pattern)
+        // Konstruktor som tar en instans av IMediator (MediatR används för att implementera CQRS-mönstret)
         public BirdsController(IMediator mediator)
         {
             _mediator = mediator;
         }
 
-        // Get all birds from the database
+        // Hämta alla fåglar från databasen
         [HttpGet]
         [Route("getAllBirds")]
         public async Task<IActionResult> GetAllBirds()
         {
+            // Anropa GetAllBirdsQuery för att hämta alla fåglar från databasen
             return Ok(await _mediator.Send(new GetAllBirdsQuery()));
         }
 
-        // Get a bird with a specific ID
+        // Hämta en fågel med ett specifikt ID
         [HttpGet]
         [Route("getBirdById/{birdId}")]
         public async Task<IActionResult> GetBirdById(Guid birdId)
         {
+            // Anropa GetBirdByIdQuery med det specifika ID för att hämta en fågel från databasen
             return Ok(await _mediator.Send(new GetBirdByIdQuery(birdId)));
         }
 
-        // Create a new bird
+        // Skapa en ny fågel.
         [HttpPost]
         [Route("addNewBird")]
         public async Task<IActionResult> AddBird([FromBody] BirdDto newBird)
         {
+            // Anropa AddBirdCommand för att lägga till en ny fågel i databasen
             return Ok(await _mediator.Send(new AddBirdCommand(newBird)));
         }
 
-        
-        // Update a specific bird
+
+        // Uppdatera en specifik fågel
         [HttpPut]
         [Route("updateBird/{birdId}")]
         public async Task<IActionResult> UpdateBird(Guid birdId, [FromBody] BirdDto updatedBird)
         {
+            // Anropa UpdateBirdByIdCommand med det specifika ID för att uppdatera en fågel i databasen
             var command = new UpdateBirdByIdCommand(updatedBird, birdId);
             var result = await _mediator.Send(command);
 
@@ -68,11 +72,12 @@ namespace API.Controllers.BirdsController
         }
 
 
-        // Delete a specific bird, if successful return "Bird deleted successfully" if not "Bird not found".
+        // Ta bort en specifik fågel, om lyckat returnera "Fågeln har tagits bort" om inte "Fågeln hittades inte".
         [HttpDelete]
         [Route("deleteBird/{birdId}")]
         public async Task<IActionResult> DeleteBird(Guid birdId)
         {
+            // Anropa DeleteBirdCommand med det specifika ID för att ta bort en fågel från databasen
             var success = await _mediator.Send(new DeleteBirdCommand(birdId));
 
             if (success)
