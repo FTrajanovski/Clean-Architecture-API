@@ -19,41 +19,45 @@ namespace API.Controllers.CatsController
     {
         internal readonly IMediator _mediator;
 
-        // Constructor that takes an instance of IMediator (MediatR is used to implement the CQRS pattern)
+        // Konstruktor som tar en instans av IMediator (MediatR används för att implementera CQRS-mönstret)
         public CatsController(IMediator mediator)
         {
             _mediator = mediator;
         }
 
-        // Get all cats from the database
+        // Hämta alla katter från databasen
         [HttpGet]
         [Route("getAllCats")]
         public async Task<IActionResult> GetAllCats()
         {
+            // Anropa GetAllCatsQuery för att hämta alla katter från databasen
             return Ok(await _mediator.Send(new GetAllCatsQuery()));
         }
 
-        // Get a cat with a specific ID
+        // Hämta en katt med ett specifikt ID
         [HttpGet]
         [Route("getCatById/{catId}")]
         public async Task<IActionResult> GetCatById(Guid catId)
         {
+            // Anropa GetCatByIdQuery med det specifika ID för att hämta en katt från databasen
             return Ok(await _mediator.Send(new GetCatByIdQuery(catId)));
         }
 
-        // Create a new cat
+        // Skapa en ny katt
         [HttpPost]
         [Route("addNewCat")]
         public async Task<IActionResult> AddCat([FromBody] CatDto newCat)
         {
+            // Anropa AddCatCommand för att lägga till en ny katt i databasen
             return Ok(await _mediator.Send(new AddCatCommand(newCat)));
         }
 
-        // Update a specific cat
+        // Uppdatera en specifik katt
         [HttpPut]
         [Route("updateCat/{catId}")]
         public async Task<IActionResult> UpdateCat(Guid catId, [FromBody] CatDto updatedCat)
         {
+            // Anropa UpdateCatByIdCommand med det specifika ID för att uppdatera en katt i databasen
             var command = new UpdateCatByIdCommand(updatedCat, catId);
             var result = await _mediator.Send(command);
 
@@ -67,11 +71,12 @@ namespace API.Controllers.CatsController
             }
         }
 
-        // Delete a specific cat, if successful return "Cat deleted successfully" if not "Cat not found".
+        // Ta bort en specifik katt, om lyckat returnera "Katten har tagits bort" om inte "Katten hittades inte".
         [HttpDelete]
         [Route("deleteCat/{catId}")]
         public async Task<IActionResult> DeleteCat(Guid catId)
         {
+            // Anropa DeleteCatCommand med det specifika ID för att ta bort en katt från databasen
             var success = await _mediator.Send(new DeleteCatCommand(catId));
 
             if (success)

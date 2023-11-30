@@ -6,24 +6,32 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+// Implementera en hanterare (UpdateBirdByIdCommandHandler) för att behandla begäran om att uppdatera en fågel baserat på ID
 namespace Application.Commands.Birds.UpdateBird
 {
+    // Implementera IRequestHandler-gränssnittet för att hantera uppdatering av fågelkommandon och returnera en fågelmodell
     public class UpdateBirdByIdCommandHandler : IRequestHandler<UpdateBirdByIdCommand, Bird>
     {
+        // Privat fält för att hålla en databasreferens
         private readonly MockDatabase _mockDatabase;
 
+        // Konstruktor för att ta emot en mockdatabasreferens och tilldela den privata variabeln
         public UpdateBirdByIdCommandHandler(MockDatabase mockDatabase)
         {
             _mockDatabase = mockDatabase;
         }
 
+        // Metod för att hantera uppdateringsbegäran för fågelkommandot
         public Task<Bird> Handle(UpdateBirdByIdCommand request, CancellationToken cancellationToken)
         {
+            // Hämta fågeln som ska uppdateras baserat på ID från mockdatabasen
             Bird birdToUpdate = _mockDatabase.Birds.FirstOrDefault(bird => bird.Id == request.Id)!;
 
+            // Uppdatera fågelns namn och flygförmåga med de nya värdena från kommandot
             birdToUpdate.Name = request.UpdatedBird.Name;
             birdToUpdate.CanFly = request.UpdatedBird.CanFly;
 
+            // Returnera den uppdaterade fågeln
             return Task.FromResult(birdToUpdate);
         }
     }

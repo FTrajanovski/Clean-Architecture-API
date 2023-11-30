@@ -18,7 +18,7 @@ namespace Test.BirdTests.QueryTest
         [SetUp]
         public void SetUp()
         {
-            // Initialize the handler and mock database before each test
+            // Initera handler och mockdatabasen inför varje test
             _mockDatabase = new MockDatabase();
             _handler = new AddBirdCommandHandler(_mockDatabase);
         }
@@ -37,7 +37,7 @@ namespace Test.BirdTests.QueryTest
             Assert.NotNull(result);
             Assert.AreEqual(newBirdDto.Name, result.Name);
 
-            // Check if the bird was added to the database
+            // Kontrollera om fågeln har lagts till i databasen
             Assert.Contains(result, _mockDatabase.Birds);
         }
 
@@ -45,7 +45,7 @@ namespace Test.BirdTests.QueryTest
         public async Task Handle_InvalidData_ReturnsNull()
         {
             // Arrange
-            var invalidBirdDto = new BirdDto { Name = null }; // Invalid data
+            var invalidBirdDto = new BirdDto { Name = null }; // Ogiltig data
             var command = new AddBirdCommand(invalidBirdDto);
 
             // Act
