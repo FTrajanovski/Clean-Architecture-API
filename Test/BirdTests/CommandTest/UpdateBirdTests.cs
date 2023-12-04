@@ -39,6 +39,6 @@ namespace Test.BirdTests.CommandTest
             Assert.NotNull(result);
             Assert.That(result.Name, Is.EqualTo(updatedBirdDto.Name));
             Assert.That(result.Id, Is.EqualTo(existingBirdId));
-        }        
+        }
     }
 }

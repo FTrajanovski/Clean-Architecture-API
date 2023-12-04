@@ -39,6 +39,6 @@ namespace Test.CatTests.CommandTest
 
             // Check if the cat was added to the database
             Assert.Contains(result, _mockDatabase.Cats);
-        }        
+        }
     }
 }
