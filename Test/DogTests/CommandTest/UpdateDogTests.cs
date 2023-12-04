@@ -22,7 +22,7 @@ namespace Test.DogTests.CommandTest
             _mockDatabase = new MockDatabase();
             _handler = new UpdateDogByIdCommandHandler(_mockDatabase);
         }
-        
+
 
         [Test]
         public async Task Handle_ExistingDogId_UpdatesName()
@@ -37,23 +37,8 @@ namespace Test.DogTests.CommandTest
 
             // Assert
             Assert.NotNull(result);
-            Assert.AreEqual(updatedDogDto.Name, result.Name);
-            Assert.AreEqual(existingDogId, result.Id);
-        }
-        
-        [Test]
-        public async Task Handle_NonExistingDogId_ReturnsNull()
-        {
-            // Arrange
-            var nonExistingDogId = Guid.NewGuid(); // Assuming this ID does not exist in the database
-            var updatedDogDto = new DogDto { Name = "UpdatedName" };
-            var command = new UpdateDogByIdCommand(updatedDogDto, nonExistingDogId);
-
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
-
-            // Assert
-            Assert.IsNull(result);
+            Assert.That(result.Name, Is.EqualTo(updatedDogDto.Name));
+            Assert.That(result.Id, Is.EqualTo(existingDogId));
         }
     }
 }

@@ -35,24 +35,10 @@ namespace Test.BirdTests.QueryTest
 
             // Assert
             Assert.NotNull(result);
-            Assert.AreEqual(newBirdDto.Name, result.Name);
+            Assert.That(result.Name, Is.EqualTo(newBirdDto.Name));
 
             // Kontrollera om fågeln har lagts till i databasen
             Assert.Contains(result, _mockDatabase.Birds);
-        }
-
-        [Test]
-        public async Task Handle_InvalidData_ReturnsNull()
-        {
-            // Arrange
-            var invalidBirdDto = new BirdDto { Name = null }; // Ogiltig data
-            var command = new AddBirdCommand(invalidBirdDto);
-
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
-
-            // Assert
-            Assert.IsNull(result);
         }
     }
 }

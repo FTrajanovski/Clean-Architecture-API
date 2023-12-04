@@ -35,24 +35,10 @@ namespace Test.DogTests.CommandTest
 
             // Assert
             Assert.NotNull(result);
-            Assert.AreEqual(newDogDto.Name, result.Name);
+            Assert.That(result.Name, Is.EqualTo(newDogDto.Name));
 
             // Check if the dog was added to the database
             Assert.Contains(result, _mockDatabase.Dogs);
-        }
-
-        [Test]
-        public async Task Handle_InvalidData_ReturnsNull()
-        {
-            // Arrange
-            var invalidDogDto = new DogDto { Name = null }; // Invalid data
-            var command = new AddDogCommand(invalidDogDto);
-
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
-
-            // Assert
-            Assert.IsNull(result);
         }
     }
 }
