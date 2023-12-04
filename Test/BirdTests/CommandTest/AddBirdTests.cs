@@ -35,7 +35,7 @@ namespace Test.BirdTests.QueryTest
 
             // Assert
             Assert.NotNull(result);
-            Assert.AreEqual(newBirdDto.Name, result.Name);
+            Assert.That(result.Name, Is.EqualTo(newBirdDto.Name));
 
             // Kontrollera om fågeln har lagts till i databasen
             Assert.Contains(result, _mockDatabase.Birds);

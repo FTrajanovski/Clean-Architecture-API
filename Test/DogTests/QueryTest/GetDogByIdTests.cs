@@ -54,5 +54,5 @@ namespace Test.DogTests.QueryTest
         }
 
     }
-    
+
 }

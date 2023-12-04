@@ -35,7 +35,7 @@ namespace Test.CatTests.CommandTest
 
             // Assert
             Assert.NotNull(result);
-            Assert.AreEqual(newCatDto.Name, result.Name);
+            Assert.That(result.Name, Is.EqualTo(newCatDto.Name));
 
             // Check if the cat was added to the database
             Assert.Contains(result, _mockDatabase.Cats);

@@ -35,7 +35,7 @@ namespace Test.DogTests.CommandTest
 
             // Assert
             Assert.NotNull(result);
-            Assert.AreEqual(newDogDto.Name, result.Name);
+            Assert.That(result.Name, Is.EqualTo(newDogDto.Name));
 
             // Check if the dog was added to the database
             Assert.Contains(result, _mockDatabase.Dogs);

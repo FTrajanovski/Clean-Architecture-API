@@ -37,8 +37,8 @@ namespace Test.CatTests.CommandTest
 
             // Assert
             Assert.NotNull(result);
-            Assert.AreEqual(updatedCatDto.Name, result.Name);
-            Assert.AreEqual(existingCatId, result.Id);
+            Assert.That(result.Name, Is.EqualTo(updatedCatDto.Name));
+            Assert.That(result.Id, Is.EqualTo(existingCatId));
         }
 
         [Test]
