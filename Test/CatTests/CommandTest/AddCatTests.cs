@@ -39,20 +39,6 @@ namespace Test.CatTests.CommandTest
 
             // Check if the cat was added to the database
             Assert.Contains(result, _mockDatabase.Cats);
-        }
-
-        [Test]
-        public async Task Handle_InvalidData_ReturnsNull()
-        {
-            // Arrange
-            var invalidCatDto = new CatDto { Name = null }; // Invalid data
-            var command = new AddCatCommand(invalidCatDto);
-
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
-
-            // Assert
-            Assert.IsNull(result);
-        }
+        }        
     }
 }

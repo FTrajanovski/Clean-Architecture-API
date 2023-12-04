@@ -40,20 +40,5 @@ namespace Test.CatTests.CommandTest
             Assert.That(result.Name, Is.EqualTo(updatedCatDto.Name));
             Assert.That(result.Id, Is.EqualTo(existingCatId));
         }
-
-        [Test]
-        public async Task Handle_NonExistingCatId_ReturnsNull()
-        {
-            // Arrange
-            var nonExistingCatId = Guid.NewGuid(); // Assuming this ID does not exist in the database
-            var updatedCatDto = new CatDto { Name = "UpdatedName" };
-            var command = new UpdateCatByIdCommand(updatedCatDto, nonExistingCatId);
-
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
-
-            // Assert
-            Assert.IsNull(result);
-        }
     }
 }

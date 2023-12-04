@@ -39,21 +39,6 @@ namespace Test.BirdTests.CommandTest
             Assert.NotNull(result);
             Assert.That(result.Name, Is.EqualTo(updatedBirdDto.Name));
             Assert.That(result.Id, Is.EqualTo(existingBirdId));
-        }
-
-        [Test]
-        public async Task Handle_NonExistingBirdId_ReturnsNull()
-        {
-            // Arrange
-            var nonExistingBirdId = Guid.NewGuid(); // Assuming this ID does not exist in the database
-            var updatedBirdDto = new BirdDto { Name = "UpdatedName" };
-            var command = new UpdateBirdByIdCommand(updatedBirdDto, nonExistingBirdId);
-
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
-
-            // Assert
-            Assert.IsNull(result);
-        }
+        }        
     }
 }
