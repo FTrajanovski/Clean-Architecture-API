@@ -11,6 +11,9 @@ namespace Infrastructure.Database
 
         }
         public virtual DbSet<Dog> Dogs { get; set; }
+        public virtual DbSet<Cat> Cats { get; set; }
+        public virtual DbSet<Bird> Birds { get; set; }
+
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
