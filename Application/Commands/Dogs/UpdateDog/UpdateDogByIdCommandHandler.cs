@@ -6,15 +6,22 @@ namespace Application.Commands.Dogs.UpdateDog
 {
     public class UpdateDogByIdCommandHandler : IRequestHandler<UpdateDogByIdCommand, Dog>
     {
-        private readonly MockDatabase _mockDatabase;
+        private readonly RealDatabase _realDatabase;
+        private MockDatabase mockDatabase;
+
+        public UpdateDogByIdCommandHandler(RealDatabase realDatabase)
+        {
+            _realDatabase = realDatabase;
+        }
 
         public UpdateDogByIdCommandHandler(MockDatabase mockDatabase)
         {
-            _mockDatabase = mockDatabase;
+            this.mockDatabase = mockDatabase;
         }
+
         public Task<Dog> Handle(UpdateDogByIdCommand request, CancellationToken cancellationToken)
         {
-            Dog dogToUpdate = _mockDatabase.Dogs.FirstOrDefault(dog => dog.Id == request.Id)!;
+            Dog dogToUpdate = _realDatabase.Dogs.FirstOrDefault(dog => dog.Id == request.Id)!;
 
             dogToUpdate.Name = request.UpdatedDog.Name;
 

@@ -9,20 +9,26 @@ namespace Application.Commands.Cats.DeleteCat
 {
     public class DeleteCatCommandHandler : IRequestHandler<DeleteCatCommand, bool>
     {
-        private readonly MockDatabase _mockDatabase;
+        private readonly RealDatabase _realDatabase;
+        private MockDatabase mockDatabase;
+
+        public DeleteCatCommandHandler(RealDatabase realDatabase)
+        {
+            _realDatabase = realDatabase;
+        }
 
         public DeleteCatCommandHandler(MockDatabase mockDatabase)
         {
-            _mockDatabase = mockDatabase;
+            this.mockDatabase = mockDatabase;
         }
 
         public Task<bool> Handle(DeleteCatCommand request, CancellationToken cancellationToken)
         {
-            var catToRemove = _mockDatabase.Cats.FirstOrDefault(cat => cat.Id == request.CatId);
+            var catToRemove = _realDatabase.Cats.FirstOrDefault(cat => cat.Id == request.CatId);
 
             if (catToRemove != null)
             {
-                _mockDatabase.Cats.Remove(catToRemove);
+                _realDatabase.Cats.Remove(catToRemove);
                 return Task.FromResult(true);
             }
             else

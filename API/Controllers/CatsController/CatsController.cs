@@ -1,13 +1,13 @@
-﻿using Application.Commands.Birds.UpdateBird;
-using Application.Commands.Cats;
-using Application.Commands.Cats.AddCat;
+﻿using Application.Commands.Cats.AddCat;
 using Application.Commands.Cats.DeleteCat;
 using Application.Commands.Cats.UpdateCat;
 using Application.Dtos;
 using Application.Queries.Cats.GetAll;
 using Application.Queries.Cats.GetById;
+using Application.Validators.Cat;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging; // Lägg till detta
 using System;
 using System.Threading.Tasks;
 
@@ -18,11 +18,17 @@ namespace API.Controllers.CatsController
     public class CatsController : ControllerBase
     {
         internal readonly IMediator _mediator;
+        private readonly CatValidator _catValidator;
+        private readonly GuidValidator _guidValidator;
+        private readonly ILogger<CatsController> _logger; // Lägg till logger
 
-        // Konstruktor som tar en instans av IMediator (MediatR används för att implementera CQRS-mönstret)
-        public CatsController(IMediator mediator)
+        // Konstruktor som tar en instans av IMediator, valideringsklasserna och logger
+        public CatsController(IMediator mediator, CatValidator catValidator, GuidValidator guidValidator, ILogger<CatsController> logger)
         {
             _mediator = mediator;
+            _catValidator = catValidator;
+            _guidValidator = guidValidator;
+            _logger = logger; // Lägg till logger
         }
 
         // Hämta alla katter från databasen
@@ -30,8 +36,16 @@ namespace API.Controllers.CatsController
         [Route("getAllCats")]
         public async Task<IActionResult> GetAllCats()
         {
-            // Anropa GetAllCatsQuery för att hämta alla katter från databasen
-            return Ok(await _mediator.Send(new GetAllCatsQuery()));
+            try
+            {
+                _logger.LogInformation("Getting all cats from the database.");
+                return Ok(await _mediator.Send(new GetAllCatsQuery()));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"An error occurred while getting all cats: {ex.Message}");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         // Hämta en katt med ett specifikt ID
@@ -39,8 +53,16 @@ namespace API.Controllers.CatsController
         [Route("getCatById/{catId}")]
         public async Task<IActionResult> GetCatById(Guid catId)
         {
-            // Anropa GetCatByIdQuery med det specifika ID för att hämta en katt från databasen
-            return Ok(await _mediator.Send(new GetCatByIdQuery(catId)));
+            try
+            {
+                _logger.LogInformation($"Getting cat with ID: {catId}");
+                return Ok(await _mediator.Send(new GetCatByIdQuery(catId)));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"An error occurred while getting cat with ID {catId}: {ex.Message}");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         // Skapa en ny katt
@@ -48,8 +70,24 @@ namespace API.Controllers.CatsController
         [Route("addNewCat")]
         public async Task<IActionResult> AddCat([FromBody] CatDto newCat)
         {
-            // Anropa AddCatCommand för att lägga till en ny katt i databasen
-            return Ok(await _mediator.Send(new AddCatCommand(newCat)));
+            try
+            {
+                // Validera katten
+                var validationResult = _catValidator.Validate(newCat);
+                if (!validationResult.IsValid)
+                {
+                    _logger.LogWarning("Invalid data received while adding a new cat.");
+                    return BadRequest(validationResult.Errors);
+                }
+
+                _logger.LogInformation($"Adding a new cat: {newCat.Name}");
+                return Ok(await _mediator.Send(new AddCatCommand(newCat)));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"An error occurred while adding a new cat: {ex.Message}");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         // Uppdatera en specifik katt
@@ -57,35 +95,77 @@ namespace API.Controllers.CatsController
         [Route("updateCat/{catId}")]
         public async Task<IActionResult> UpdateCat(Guid catId, [FromBody] CatDto updatedCat)
         {
-            // Anropa UpdateCatByIdCommand med det specifika ID för att uppdatera en katt i databasen
-            var command = new UpdateCatByIdCommand(updatedCat, catId);
-            var result = await _mediator.Send(command);
+            try
+            {
+                // Validera ID
+                var idValidationResult = _guidValidator.Validate(catId);
+                if (!idValidationResult.IsValid)
+                {
+                    _logger.LogWarning($"Invalid cat ID received: {catId}");
+                    return BadRequest(idValidationResult.Errors);
+                }
 
-            if (result != null)
-            {
-                return Ok(result);
+                // Validera katten
+                var catValidationResult = _catValidator.Validate(updatedCat);
+                if (!catValidationResult.IsValid)
+                {
+                    _logger.LogWarning("Invalid data received while updating a cat.");
+                    return BadRequest(catValidationResult.Errors);
+                }
+
+                _logger.LogInformation($"Updating cat with ID: {catId}");
+                var command = new UpdateCatByIdCommand(updatedCat, catId);
+                var result = await _mediator.Send(command);
+
+                if (result != null)
+                {
+                    return Ok(result);
+                }
+                else
+                {
+                    _logger.LogWarning($"Cat with ID {catId} not found.");
+                    return NotFound("Cat not found.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return NotFound("Cat not found.");
+                _logger.LogError($"An error occurred while updating cat with ID {catId}: {ex.Message}");
+                return StatusCode(500, "Internal server error");
             }
         }
 
-        // Ta bort en specifik katt, om lyckat returnera "Katten har tagits bort" om inte "Katten hittades inte".
+        // Ta bort en specifik katt
         [HttpDelete]
         [Route("deleteCat/{catId}")]
         public async Task<IActionResult> DeleteCat(Guid catId)
         {
-            // Anropa DeleteCatCommand med det specifika ID för att ta bort en katt från databasen
-            var success = await _mediator.Send(new DeleteCatCommand(catId));
+            try
+            {
+                // Validera ID
+                var idValidationResult = _guidValidator.Validate(catId);
+                if (!idValidationResult.IsValid)
+                {
+                    _logger.LogWarning($"Invalid cat ID received: {catId}");
+                    return BadRequest(idValidationResult.Errors);
+                }
 
-            if (success)
-            {
-                return Ok("Cat deleted successfully.");
+                _logger.LogInformation($"Deleting cat with ID: {catId}");
+                var success = await _mediator.Send(new DeleteCatCommand(catId));
+
+                if (success)
+                {
+                    return Ok("Cat deleted successfully.");
+                }
+                else
+                {
+                    _logger.LogWarning($"Cat with ID {catId} not found.");
+                    return NotFound("Cat not found.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return NotFound("Cat not found.");
+                _logger.LogError($"An error occurred while deleting cat with ID {catId}: {ex.Message}");
+                return StatusCode(500, "Internal server error");
             }
         }
     }

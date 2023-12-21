@@ -12,11 +12,19 @@ namespace Application.Commands.Birds.DeleteBird
     public class DeleteBirdCommandHandler : IRequestHandler<DeleteBirdCommand, bool>
     {
         // En instans av databashanteraren (MockDatabase) injiceras genom konstruktorn
+        private readonly RealDatabase _realDatabase;
         private readonly MockDatabase _mockDatabase;
+        private MockDatabase mockDatabase;
 
-        // Konstruktor för att injicera MockDatabase-instansen
         public DeleteBirdCommandHandler(MockDatabase mockDatabase)
         {
+            this.mockDatabase = mockDatabase;
+        }
+
+        // Konstruktor för att injicera MockDatabase-instansen
+        public DeleteBirdCommandHandler(RealDatabase realDatabase, MockDatabase mockDatabase)
+        {
+            _realDatabase = realDatabase;
             _mockDatabase = mockDatabase;
         }
 
@@ -24,13 +32,13 @@ namespace Application.Commands.Birds.DeleteBird
         public Task<bool> Handle(DeleteBirdCommand request, CancellationToken cancellationToken)
         {
             // Hämta fågeln som ska tas bort från databasen baserat på ID
-            var birdToRemove = _mockDatabase.Birds.FirstOrDefault(bird => bird.Id == request.BirdId);
+            var birdToRemove = _realDatabase.Birds.FirstOrDefault(bird => bird.Id == request.BirdId);
 
             // Om fågeln hittades i databasen
             if (birdToRemove != null)
             {
                 // Ta bort fågeln från databasen
-                _mockDatabase.Birds.Remove(birdToRemove);
+                _realDatabase.Birds.Remove(birdToRemove);
                 return Task.FromResult(true); // Returnera true för att indikera att borttagningen lyckades
             }
             else
