@@ -7,11 +7,17 @@ namespace Application.Commands.Dogs.AddDog
 {
     public class AddDogCommandHandler : IRequestHandler<AddDogCommand, Dog>
     {
-        private readonly MockDatabase _mockDatabase;
+        private readonly RealDatabase _realDatabase;
+        private MockDatabase mockDatabase;
+
+        public AddDogCommandHandler(RealDatabase realDatabase)
+        {
+            _realDatabase = realDatabase;
+        }
 
         public AddDogCommandHandler(MockDatabase mockDatabase)
         {
-            _mockDatabase = mockDatabase;
+            this.mockDatabase = mockDatabase;
         }
 
         public Task<Dog> Handle(AddDogCommand request, CancellationToken cancellationToken)
@@ -22,7 +28,7 @@ namespace Application.Commands.Dogs.AddDog
                 Name = request.NewDog.Name
             };
 
-            _mockDatabase.Dogs.Add(dogToCreate);
+            _realDatabase.Dogs.Add(dogToCreate);
 
             return Task.FromResult(dogToCreate);
         }

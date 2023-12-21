@@ -15,5 +15,7 @@ namespace Application.Dtos
         public string Name { get; set; } = string.Empty;
         // Egenskap som representerar om fågeln kan flyga eller inte
         public bool CanFly { get; set; }
+        // Egenskap som representerar färgen på fågeln, standardvärdet är en tom sträng
+        public string? Color { get; set; }
     }
 }

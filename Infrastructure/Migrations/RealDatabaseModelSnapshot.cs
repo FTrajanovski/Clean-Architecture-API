@@ -19,55 +19,136 @@ namespace Infrastructure.Migrations
                 .HasAnnotation("ProductVersion", "6.0.25")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            modelBuilder.Entity("Domain.Models.Bird", b =>
+            modelBuilder.Entity("Domain.Models.Animal.AnimalModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AnimalModel");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("AnimalModel");
+                });
+
+            modelBuilder.Entity("Domain.Models.User", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Domain.Models.UserAnimal", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("AnimalId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("AnimalModelId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("UserId", "AnimalId");
+
+                    b.HasIndex("AnimalId");
+
+                    b.HasIndex("AnimalModelId");
+
+                    b.ToTable("UserAnimals");
+                });
+
+            modelBuilder.Entity("Domain.Models.Bird", b =>
+                {
+                    b.HasBaseType("Domain.Models.Animal.AnimalModel");
 
                     b.Property<bool>("CanFly")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
+                    b.Property<string>("Color")
                         .HasColumnType("longtext");
 
-                    b.HasKey("Id");
-
-                    b.ToTable("Birds");
+                    b.HasDiscriminator().HasValue("Bird");
                 });
 
             modelBuilder.Entity("Domain.Models.Cat", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                    b.HasBaseType("Domain.Models.Animal.AnimalModel");
 
                     b.Property<bool>("LikesToPlay")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Cats");
+                    b.HasDiscriminator().HasValue("Cat");
                 });
 
             modelBuilder.Entity("Domain.Models.Dog", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                    b.HasBaseType("Domain.Models.Animal.AnimalModel");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
+                    b.Property<string>("Breed")
                         .HasColumnType("longtext");
 
-                    b.HasKey("Id");
+                    b.Property<int>("Weight")
+                        .HasColumnType("int");
 
-                    b.ToTable("Dogs");
+                    b.HasDiscriminator().HasValue("Dog");
+                });
+
+            modelBuilder.Entity("Domain.Models.UserAnimal", b =>
+                {
+                    b.HasOne("Domain.Models.Animal.AnimalModel", "Animal")
+                        .WithMany()
+                        .HasForeignKey("AnimalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Models.Animal.AnimalModel", null)
+                        .WithMany("UserAnimals")
+                        .HasForeignKey("AnimalModelId");
+
+                    b.HasOne("Domain.Models.User", "User")
+                        .WithMany("UserAnimals")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Animal");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Models.Animal.AnimalModel", b =>
+                {
+                    b.Navigation("UserAnimals");
+                });
+
+            modelBuilder.Entity("Domain.Models.User", b =>
+                {
+                    b.Navigation("UserAnimals");
                 });
 #pragma warning restore 612, 618
         }

@@ -13,19 +13,25 @@ namespace Application.Commands.Birds.UpdateBird
     public class UpdateBirdByIdCommandHandler : IRequestHandler<UpdateBirdByIdCommand, Bird>
     {
         // Privat fält för att hålla en databasreferens
-        private readonly MockDatabase _mockDatabase;
+        private readonly RealDatabase _realDatabase;
+        private MockDatabase mockDatabase;
 
         // Konstruktor för att ta emot en mockdatabasreferens och tilldela den privata variabeln
+        public UpdateBirdByIdCommandHandler(RealDatabase realDatabase)
+        {
+            _realDatabase = realDatabase;
+        }
+
         public UpdateBirdByIdCommandHandler(MockDatabase mockDatabase)
         {
-            _mockDatabase = mockDatabase;
+            this.mockDatabase = mockDatabase;
         }
 
         // Metod för att hantera uppdateringsbegäran för fågelkommandot
         public Task<Bird> Handle(UpdateBirdByIdCommand request, CancellationToken cancellationToken)
         {
             // Hämta fågeln som ska uppdateras baserat på ID från mockdatabasen
-            Bird birdToUpdate = _mockDatabase.Birds.FirstOrDefault(bird => bird.Id == request.Id)!;
+            Bird birdToUpdate = _realDatabase.Birds.FirstOrDefault(bird => bird.Id == request.Id)!;
 
             // Uppdatera fågelns namn och flygförmåga med de nya värdena från kommandot
             birdToUpdate.Name = request.UpdatedBird.Name;

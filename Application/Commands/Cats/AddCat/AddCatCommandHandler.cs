@@ -12,12 +12,18 @@ namespace Application.Commands.Cats.AddCat
     public class AddCatCommandHandler : IRequestHandler<AddCatCommand, Cat>
     {
         // Privat variabel för att hålla referensen till en mockdatabas
-        private readonly MockDatabase _mockDatabase;
+        private readonly RealDatabase _realDatabase;
+        private MockDatabase mockDatabase;
 
         // Konstruktor som tar emot en instans av mockdatabasen och tilldelar den privata variabeln
+        public AddCatCommandHandler(RealDatabase realDatabase)
+        {
+            _realDatabase = realDatabase;
+        }
+
         public AddCatCommandHandler(MockDatabase mockDatabase)
         {
-            _mockDatabase = mockDatabase;
+            this.mockDatabase = mockDatabase;
         }
 
         // Metod för att hantera lägga-till-kattkommandot och returnera en kattmodell
@@ -32,7 +38,7 @@ namespace Application.Commands.Cats.AddCat
             };
 
             // Lägg till den nya katten i mockdatabasen
-            _mockDatabase.Cats.Add(catToCreate);
+            _realDatabase.Cats.Add(catToCreate);
 
             // Returnera den nya kattmodellen som svar på kommandot
             return Task.FromResult(catToCreate);
