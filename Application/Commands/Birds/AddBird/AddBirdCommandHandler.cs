@@ -13,12 +13,18 @@ namespace Application.Commands.Birds.AddBird
     public class AddBirdCommandHandler : IRequestHandler<AddBirdCommand, Bird>
     {
         // En privat referens till den mockade databasen där fåglar lagras
-        private readonly MockDatabase _mockDatabase;
+        private readonly RealDatabase _realDatabase;
+        private MockDatabase mockDatabase;
 
         // Konstruktor som tar en mockad databas som en parameter och lagrar den för användning
+        public AddBirdCommandHandler(RealDatabase realDatabase)
+        {
+            _realDatabase = realDatabase;
+        }
+
         public AddBirdCommandHandler(MockDatabase mockDatabase)
         {
-            _mockDatabase = mockDatabase;
+            this.mockDatabase = mockDatabase;
         }
 
         // Implementera logiken för att hantera kommandot och skapa en ny fågel
@@ -33,7 +39,7 @@ namespace Application.Commands.Birds.AddBird
             };
 
             // Lägg till den nya fågeln i den mockade databasen
-            _mockDatabase.Birds.Add(birdToCreate);
+            _realDatabase.Birds.Add(birdToCreate);
 
             // Returnera den skapade fågeln som resultat av hanteringen
             return Task.FromResult(birdToCreate);
