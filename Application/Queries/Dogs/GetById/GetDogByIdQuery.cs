@@ -13,3 +13,4 @@ namespace Application.Queries.Dogs.GetById
         public Guid Id { get; }
     }
 }
+

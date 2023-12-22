@@ -1,24 +1,16 @@
-﻿using Application.Dtos;
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Commands.UserAnimals.UpdateUserAnimal
+namespace Application.Commands.UserAnimal.Update
 {
-    public class UpdateUserAnimalCommand : IRequest<bool>
+    public class UpdateUserAnimalCommand : IRequest
     {
-        public UserAnimalDto UserAnimal { get; }
-        public Guid UserId { get; }
-        public Guid AnimalId { get; }
+        public Guid UserId { get; set; }
+        public Guid AnimalId { get; set; }
 
-        public UpdateUserAnimalCommand(UserAnimalDto userAnimal, Guid userId, Guid animalId)
-        {
-            UserAnimal = userAnimal;
-            UserId = userId;
-            AnimalId = animalId;
-        }
     }
 }

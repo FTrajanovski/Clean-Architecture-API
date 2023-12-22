@@ -1,50 +1,42 @@
-﻿using MediatR;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using Domain.Models;
 using Infrastructure.Database;
+using MediatR;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-// Skapa en hanterare (DeleteBirdCommandHandler) för att behandla borttagning av fågelkommandot
 namespace Application.Commands.Birds.DeleteBird
 {
-    // Implementera IRequestHandler-gränssnittet för att hantera DeleteBirdCommand och returnera ett booleskt värde
-    public class DeleteBirdCommandHandler : IRequestHandler<DeleteBirdCommand, bool>
+    public class DeleteBirdByIdCommandHandler : IRequestHandler<DeleteBirdByIdCommand, Bird>
     {
-        // En instans av databashanteraren (MockDatabase) injiceras genom konstruktorn
+
         private readonly RealDatabase _realDatabase;
-        private readonly MockDatabase _mockDatabase;
-        private MockDatabase mockDatabase;
-
-        public DeleteBirdCommandHandler(MockDatabase mockDatabase)
-        {
-            this.mockDatabase = mockDatabase;
-        }
-
-        // Konstruktor för att injicera MockDatabase-instansen
-        public DeleteBirdCommandHandler(RealDatabase realDatabase, MockDatabase mockDatabase)
+        public DeleteBirdByIdCommandHandler(RealDatabase realDatabase)
         {
             _realDatabase = realDatabase;
-            _mockDatabase = mockDatabase;
         }
 
-        // Hantera borttagningen av fågeln baserat på det givna kommandot
-        public Task<bool> Handle(DeleteBirdCommand request, CancellationToken cancellationToken)
+        public Task<Bird> Handle(DeleteBirdByIdCommand request, CancellationToken cancellationToken)
         {
-            // Hämta fågeln som ska tas bort från databasen baserat på ID
-            var birdToRemove = _realDatabase.Birds.FirstOrDefault(bird => bird.Id == request.BirdId);
+            var birdToDelete = _realDatabase.Birds.FirstOrDefault(bird => bird.Id == request.Id);
 
-            // Om fågeln hittades i databasen
-            if (birdToRemove != null)
+            if (birdToDelete != null)
             {
-                // Ta bort fågeln från databasen
-                _realDatabase.Birds.Remove(birdToRemove);
-                return Task.FromResult(true); // Returnera true för att indikera att borttagningen lyckades
+                _realDatabase.Birds.Remove(birdToDelete);
             }
             else
             {
-                return Task.FromResult(false); // Returnera false om fågeln inte hittades i databasen
+                // Throw an exception or handle the null case as needed for your application
+                throw new InvalidOperationException("No bird with the given ID was found.");
             }
+
+
+            return Task.FromResult(birdToDelete);
         }
+
+
+
     }
 }

@@ -1,15 +1,20 @@
-﻿using MediatR;
+﻿using Domain.Models;
+using MediatR;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Application.Commands.Cats.DeleteCat
 {
-    public class DeleteCatCommand : IRequest<bool>
+    public class DeleteCatByIdCommand : IRequest<Cat>
     {
-        public DeleteCatCommand(Guid catId)
+        public DeleteCatByIdCommand(Guid id)
         {
-            CatId = catId;
-        }
+            Id = id;
 
-        public Guid CatId { get; }
+        }
+        public Guid Id { get; set; }
     }
 }

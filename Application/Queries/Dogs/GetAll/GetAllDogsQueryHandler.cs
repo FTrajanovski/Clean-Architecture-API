@@ -1,23 +1,28 @@
 ﻿using Application.Queries.Dogs.GetAll;
 using Domain.Models;
+using Infrastructure;
 using Infrastructure.Database;
 using MediatR;
 
 namespace Application.Queries.Dogs
 {
-    internal sealed class GetAllDogsQueryHandler : IRequestHandler<GetAllDogsQuery, List<Dog>>
+    public class GetAllDogsQueryHandler : IRequestHandler<GetAllDogsQuery, List<Dog>>
     {
-        private readonly RealDatabase _realDatabase;
+        private readonly IDogRepository _dogRepository;
 
-        public GetAllDogsQueryHandler(RealDatabase realDatabase)
+        public GetAllDogsQueryHandler(IDogRepository dogRepository)
         {
-            _realDatabase = realDatabase;
+            _dogRepository = dogRepository;
         }
-        public Task<List<Dog>> Handle(GetAllDogsQuery request, CancellationToken cancellationToken)
+        public async Task<List<Dog>> Handle(GetAllDogsQuery request, CancellationToken cancellationToken)
         {
-            List<Dog> allDogsFromRealDatabase = _realDatabase.Dogs.ToList();
-            return Task.FromResult(allDogsFromRealDatabase);
-        }
+            List<Dog> allDogsFromDatabase = await _dogRepository.GetAllDogsAsync();
+            if (allDogsFromDatabase == null)
+            {
+                throw new InvalidOperationException("No Dogs Was Found");
+            }
 
+            return allDogsFromDatabase;
+        }
     }
 }

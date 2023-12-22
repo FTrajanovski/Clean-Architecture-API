@@ -42,14 +42,11 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Models.User", b =>
                 {
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<bool>("IsAdmin")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("Password")
+                    b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("longtext");
 
@@ -57,12 +54,44 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.HasKey("UserId");
+                    b.HasKey("Id");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("774c97d1-f98d-4e5c-940b-9569339024d5"),
+                            PasswordHash = "Fil123",
+                            UserName = "rob"
+                        },
+                        new
+                        {
+                            Id = new Guid("33a905de-3f68-4bc3-a424-ac900859b8e1"),
+                            PasswordHash = "Stefan123",
+                            UserName = "stefan"
+                        },
+                        new
+                        {
+                            Id = new Guid("19f578f5-1423-4b2a-8aa6-20901e39bc43"),
+                            PasswordHash = "navjet123",
+                            UserName = "Navjet"
+                        },
+                        new
+                        {
+                            Id = new Guid("85856ae0-963f-41d1-ba2b-2ead54e58233"),
+                            PasswordHash = "FindNemo123",
+                            UserName = "Nemm"
+                        },
+                        new
+                        {
+                            Id = new Guid("12345678-1234-5678-1234-567812345614"),
+                            PasswordHash = "",
+                            UserName = "TestDeleteUser"
+                        });
                 });
 
-            modelBuilder.Entity("Domain.Models.UserAnimal", b =>
+            modelBuilder.Entity("Domain.Models.UserAnimalModel", b =>
                 {
                     b.Property<Guid>("UserId")
                         .HasColumnType("char(36)");
@@ -70,14 +99,9 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("AnimalId")
                         .HasColumnType("char(36)");
 
-                    b.Property<Guid?>("AnimalModelId")
-                        .HasColumnType("char(36)");
-
                     b.HasKey("UserId", "AnimalId");
 
                     b.HasIndex("AnimalId");
-
-                    b.HasIndex("AnimalModelId");
 
                     b.ToTable("UserAnimals");
                 });
@@ -93,6 +117,38 @@ namespace Infrastructure.Migrations
                         .HasColumnType("longtext");
 
                     b.HasDiscriminator().HasValue("Bird");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("b42100ee-afde-47cf-bf0b-5e86b972c401"),
+                            Name = "Adam",
+                            CanFly = true
+                        },
+                        new
+                        {
+                            Id = new Guid("ffb1249a-89b4-4c55-b9f1-9370d346ca32"),
+                            Name = "Perry",
+                            CanFly = true
+                        },
+                        new
+                        {
+                            Id = new Guid("64074050-608f-44f2-acd8-c41474467eae"),
+                            Name = "Tweet",
+                            CanFly = true
+                        },
+                        new
+                        {
+                            Id = new Guid("12345678-1234-5678-1234-567812345612"),
+                            Name = "TestBirdForUnitTests",
+                            CanFly = true
+                        },
+                        new
+                        {
+                            Id = new Guid("12345678-1234-5678-1234-567812345613"),
+                            Name = "TestDeleteBird",
+                            CanFly = true
+                        });
                 });
 
             modelBuilder.Entity("Domain.Models.Cat", b =>
@@ -103,6 +159,38 @@ namespace Infrastructure.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.HasDiscriminator().HasValue("Cat");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("d9f49e68-6c56-4e77-8a44-9b907c2a9541"),
+                            Name = "Nugget",
+                            LikesToPlay = true
+                        },
+                        new
+                        {
+                            Id = new Guid("937f58c4-4a03-4852-a0b7-c31b1f9fc0ad"),
+                            Name = "SmallMac",
+                            LikesToPlay = true
+                        },
+                        new
+                        {
+                            Id = new Guid("1e442d7f-2de7-4aab-ba2b-d5d1320c67aa"),
+                            Name = "Avocado",
+                            LikesToPlay = false
+                        },
+                        new
+                        {
+                            Id = new Guid("12345678-1234-5678-1234-567812345610"),
+                            Name = "TestCatForUnitTests",
+                            LikesToPlay = true
+                        },
+                        new
+                        {
+                            Id = new Guid("12345678-1234-5678-1234-567812345611"),
+                            Name = "TestDeleteCat",
+                            LikesToPlay = true
+                        });
                 });
 
             modelBuilder.Entity("Domain.Models.Dog", b =>
@@ -116,19 +204,47 @@ namespace Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.HasDiscriminator().HasValue("Dog");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("0cdc827a-8fb6-4de0-b400-de36d8a15d91"),
+                            Name = "Björn",
+                            Weight = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("3b4704f8-389a-4637-ab33-4b026500481f"),
+                            Name = "Patrik",
+                            Weight = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("168bfd41-a5f7-41d3-a6fc-8d1a2701fed4"),
+                            Name = "Alfred",
+                            Weight = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("12345678-1234-5678-1234-567812345678"),
+                            Name = "TestDogForUnitTests",
+                            Weight = 0
+                        },
+                        new
+                        {
+                            Id = new Guid("12345678-1234-5678-1234-567812345679"),
+                            Name = "TestDeleteDog",
+                            Weight = 0
+                        });
                 });
 
-            modelBuilder.Entity("Domain.Models.UserAnimal", b =>
+            modelBuilder.Entity("Domain.Models.UserAnimalModel", b =>
                 {
                     b.HasOne("Domain.Models.Animal.AnimalModel", "Animal")
-                        .WithMany()
+                        .WithMany("UserAnimals")
                         .HasForeignKey("AnimalId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Domain.Models.Animal.AnimalModel", null)
-                        .WithMany("UserAnimals")
-                        .HasForeignKey("AnimalModelId");
 
                     b.HasOne("Domain.Models.User", "User")
                         .WithMany("UserAnimals")

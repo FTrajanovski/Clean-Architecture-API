@@ -1,53 +1,58 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
 using Domain.Models;
-using Domain.Models.Animal;
+using Infrastructure.Database.DatabaseHelpers;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Database
 {
     public class RealDatabase : DbContext
     {
+
+
         public RealDatabase() { }
+        public RealDatabase(DbContextOptions<RealDatabase> options) : base(options) { }
 
-        public RealDatabase(DbContextOptions<RealDatabase> options) : base(options)
-        {
-
-        }
 
         public virtual DbSet<Dog> Dogs { get; set; }
         public virtual DbSet<Cat> Cats { get; set; }
         public virtual DbSet<Bird> Birds { get; set; }
         public virtual DbSet<User> Users { get; set; }
-        public virtual DbSet<UserAnimal> UserAnimals { get; set; }
+        public virtual DbSet<UserAnimalModel> UserAnimals { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseMySql("server=localhost;port=3306;user=root;password=Kadino44;database=CleanAPI",
+                        new MySqlServerVersion(new Version(8, 0, 35)));
+
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Primärnyckeldefinition för UserAnimal
-            modelBuilder.Entity<UserAnimal>()
+            //Configuring the many-to-many relationship
+            modelBuilder.Entity<UserAnimalModel>()
                 .HasKey(ua => new { ua.UserId, ua.AnimalId });
 
-            // Övriga konfigurationer...
-
-            // Exempel: Konfigurera förhållandet mellan UserAnimal och User
-            modelBuilder.Entity<UserAnimal>()
+            modelBuilder.Entity<UserAnimalModel>()
                 .HasOne(ua => ua.User)
-                .WithMany(u => u.UserAnimals)
+                .WithMany(ua => ua.UserAnimals)
                 .HasForeignKey(ua => ua.UserId);
 
-            // Exempel: Konfigurera förhållandet mellan UserAnimal och AnimalModel
-            modelBuilder.Entity<UserAnimal>()
+            modelBuilder.Entity<UserAnimalModel>()
                 .HasOne(ua => ua.Animal)
-                .WithMany()
+                .WithMany(a => a.UserAnimals)
                 .HasForeignKey(ua => ua.AnimalId);
+
+            DatabaseSeedHelper.SeedData(modelBuilder);
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            //connectionString to Db
-            string connectionString = "Server=localhost;Port=3306;Database=CleanAPI;User=root;Password=Kadino44;";
 
-            optionsBuilder.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 35)));
-        }
+
+
+
     }
+
+
 }

@@ -1,35 +1,38 @@
-﻿using MediatR;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using Domain.Models;
+using Infrastructure;
 using Infrastructure.Database;
+using MediatR;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Application.Commands.Dogs.DeleteDog
 {
-    public class DeleteDogCommandHandler : IRequestHandler<DeleteDogCommand, bool>
+    public class DeleteDogByIdCommandHandler : IRequestHandler<DeleteDogByIdCommand, Dog>
     {
-        private readonly RealDatabase _realDatabase;
-        private MockDatabase mockDatabase;
+        private readonly IDogRepository _dogRepository;
 
-        public DeleteDogCommandHandler(RealDatabase realDatabase)
+        public DeleteDogByIdCommandHandler(IDogRepository dogRepository)
         {
-            _realDatabase = realDatabase;
+            _dogRepository = dogRepository;
         }
 
 
-        public Task<bool> Handle(DeleteDogCommand request, CancellationToken cancellationToken)
+        public async Task<Dog> Handle(DeleteDogByIdCommand request, CancellationToken cancellationToken)
         {
-            var dogToRemove = _realDatabase.Dogs.FirstOrDefault(d => d.Id == request.DogId);
+            Dog dogTodelete = await _dogRepository.GetByIdAsync(request.Id);
+            if (dogTodelete == null)
+            {
+                throw new InvalidOperationException("No dog with the given Id was found");
+            }
 
-            if (dogToRemove != null)
-            {
-                _realDatabase.Dogs.Remove(dogToRemove);
-                return Task.FromResult(true);
-            }
-            else
-            {
-                return Task.FromResult(false);
-            }
+            await _dogRepository.DeleteAsync(request.Id);
+
+            return (dogTodelete);
+
         }
+
     }
 }

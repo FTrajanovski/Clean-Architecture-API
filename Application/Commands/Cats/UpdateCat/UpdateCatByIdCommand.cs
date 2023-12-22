@@ -2,6 +2,10 @@
 using Domain.Models;
 using MediatR;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Application.Commands.Cats.UpdateCat
 {
@@ -9,11 +13,10 @@ namespace Application.Commands.Cats.UpdateCat
     {
         public UpdateCatByIdCommand(CatDto updatedCat, Guid id)
         {
-            UpdatedCat = updatedCat;
+            UpdateCat = updatedCat;
             Id = id;
         }
-
-        public CatDto UpdatedCat { get; }
+        public CatDto UpdateCat { get; }
         public Guid Id { get; }
     }
 }

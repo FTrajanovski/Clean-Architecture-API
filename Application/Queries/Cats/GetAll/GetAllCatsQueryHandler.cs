@@ -1,27 +1,26 @@
-﻿using Application.Queries.Cats.GetAll;
-using Domain.Models;
+﻿using Domain.Models;
 using Infrastructure.Database;
 using MediatR;
+using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Application.Queries.Cats.GetAll
 {
-    internal sealed class GetAllCatsQueryHandler : IRequestHandler<GetAllCatsQuery, List<Cat>>
+    public class GetAllCatsQueryHandler : IRequestHandler<GetAllCatsQuery, List<Cat>>
     {
-        private readonly RealDatabase _realDatabase;
-
-        public GetAllCatsQueryHandler(RealDatabase realDatabase)
+        private readonly MockDatabase _mockDatabase;
+        public GetAllCatsQueryHandler(MockDatabase mockDatabase)
         {
-            _realDatabase = realDatabase;
+            _mockDatabase = mockDatabase;
         }
-
         public Task<List<Cat>> Handle(GetAllCatsQuery request, CancellationToken cancellationToken)
         {
-            List<Cat> allCatsFromRealDatabase = new List<Cat>(_realDatabase.Cats);
-            return Task.FromResult(allCatsFromRealDatabase);
-        }
+            List<Cat> allCatsFromMockDatabase = _mockDatabase.Cats;
+            return Task.FromResult(allCatsFromMockDatabase);
 
+        }
     }
 }

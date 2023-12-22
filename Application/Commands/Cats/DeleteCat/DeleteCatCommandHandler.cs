@@ -1,36 +1,38 @@
-﻿using MediatR;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using Domain.Models;
 using Infrastructure.Database;
+using MediatR;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Application.Commands.Cats.DeleteCat
 {
-    public class DeleteCatCommandHandler : IRequestHandler<DeleteCatCommand, bool>
+    public class DeleteCatByIdCommandHandler : IRequestHandler<DeleteCatByIdCommand, Cat>
     {
         private readonly RealDatabase _realDatabase;
-        private MockDatabase mockDatabase;
-
-        public DeleteCatCommandHandler(RealDatabase realDatabase)
+        public DeleteCatByIdCommandHandler(RealDatabase realDatabase)
         {
             _realDatabase = realDatabase;
         }
 
-
-        public Task<bool> Handle(DeleteCatCommand request, CancellationToken cancellationToken)
+        public Task<Cat> Handle(DeleteCatByIdCommand request, CancellationToken cancellationToken)
         {
-            var catToRemove = _realDatabase.Cats.FirstOrDefault(cat => cat.Id == request.CatId);
+            var catToDelete = _realDatabase.Cats.FirstOrDefault(cat => cat.Id == request.Id);
 
-            if (catToRemove != null)
+            if (catToDelete != null)
             {
-                _realDatabase.Cats.Remove(catToRemove);
-                return Task.FromResult(true);
+                _realDatabase.Cats.Remove(catToDelete);
             }
             else
             {
-                return Task.FromResult(false);
+                // Throw an exception or handle the null case as needed for your application
+                throw new InvalidOperationException("No cat with the given ID was found.");
             }
+
+            return Task.FromResult(catToDelete);
         }
+
     }
 }

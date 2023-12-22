@@ -1,19 +1,15 @@
-﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Domain.Models;
+using MediatR;
 
-namespace Application.Commands.User.DeleteUser
+namespace Application;
+
+public class DeleteUserByIdCommand : IRequest<User>
 {
-    public class DeleteUserCommand : IRequest<bool>
+    public DeleteUserByIdCommand(Guid id)
     {
-        public Guid UserId { get; }
-
-        public DeleteUserCommand(Guid userId)
-        {
-            UserId = userId;
-        }
+        Guid Id = id;
     }
+
+    public Guid Id { get; }
+
 }

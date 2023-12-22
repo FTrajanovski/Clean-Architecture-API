@@ -1,8 +1,16 @@
-﻿namespace Domain.Models
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Models
 {
-    public class User : UserModel
+    public class User
     {
-        public bool IsAdmin { get; set; }
-        public ICollection<UserAnimal> UserAnimals { get; set; } = new List<UserAnimal>();
+        public Guid Id { get; set; }
+        public string UserName { get; set; } = string.Empty;
+        public string PasswordHash { get; set; } = string.Empty;
+        public virtual ICollection<UserAnimalModel>? UserAnimals { get; set; }
     }
 }

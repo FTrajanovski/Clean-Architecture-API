@@ -1,37 +1,35 @@
-﻿using Application.Dtos;
-using Infrastructure.Database;
+﻿using Domain.Models;
+using Infrastructure.Database.Repositories.UserRepo;
 using MediatR;
+using Org.BouncyCastle.Crypto.Generators;
 
-namespace Application.Commands.User.AddUser
+namespace Application;
+
+public class AddUserCommandHandler : IRequestHandler<AddUserCommand, User>
 {
-    public class AddUserCommandHandler : IRequestHandler<AddUserCommand, UserDto>
+
+    private readonly IUserRepository _userRepository;
+
+    public AddUserCommandHandler(IUserRepository userRepository)
     {
-        private readonly RealDatabase _dbContext;
-        private MockDatabase mockDatabase;
-
-        public AddUserCommandHandler(RealDatabase dbContext)
+        _userRepository = userRepository;
+    }
+    public async Task<User> Handle(AddUserCommand request, CancellationToken cancellationToken)
+    {
+        User userToCreate = new()
         {
-            _dbContext = dbContext;
-        }
+            Id = Guid.NewGuid(),
+            UserName = request.NewUser.UserName,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewUser.Password),
 
-        public async Task<UserDto> Handle(AddUserCommand request, CancellationToken cancellationToken)
-        {
-            var newUser = new Domain.Models.User
-            {
-                UserName = request.NewUser.UserName,
-                Password = request.NewUser.Password,
-                IsAdmin = request.NewUser.IsAdmin
-            };
+        };
 
-            _dbContext.Users.Add(newUser);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+        await _userRepository.AddUserAsync(userToCreate);
 
-            return new UserDto
-            {
-                UserId = newUser.UserId,
-                UserName = newUser.UserName,
-                IsAdmin = newUser.IsAdmin
-            };
-        }
+        return userToCreate;
+
+
+
+
     }
 }

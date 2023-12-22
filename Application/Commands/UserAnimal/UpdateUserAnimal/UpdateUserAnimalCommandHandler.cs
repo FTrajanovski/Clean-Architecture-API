@@ -1,31 +1,24 @@
-﻿using Application.Commands.UserAnimals.UpdateUserAnimal;
-using Infrastructure.Database;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
+﻿using Infrastructure.Database.Repositories.AnimalRepo;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-public class UpdateUserAnimalCommandHandler : IRequestHandler<UpdateUserAnimalCommand, bool>
+namespace Application.Commands.UserAnimal.Update
 {
-    private readonly RealDatabase _dbContext;
-
-    public UpdateUserAnimalCommandHandler(RealDatabase dbContext)
+    public class UpdateUserAnimalCommandHandler
     {
-        _dbContext = dbContext;
-    }
+        private readonly IUserAnimalRepository _repository;
 
-    public async Task<bool> Handle(UpdateUserAnimalCommand request, CancellationToken cancellationToken)
-    {
-        var userAnimalToUpdate = await _dbContext.UserAnimals
-            .FirstOrDefaultAsync(ua => ua.UserId == request.UserId && ua.AnimalId == request.AnimalId);
-
-        if (userAnimalToUpdate != null)
+        public UpdateUserAnimalCommandHandler(IUserAnimalRepository repository)
         {
-            // Uppdatera logik om det behövs
-            // Exempelvis, om du vill uppdatera namnet på djuret: userAnimalToUpdate.Animal.Name = request.UserAnimal.AnimalName;
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
-            return true;
+            _repository = repository;
         }
 
-        return false;
+        public async Task HandleAsync(UpdateUserAnimalCommand command)
+        {
+            // Logic to update user or animal based on the command properties
+        }
     }
 }

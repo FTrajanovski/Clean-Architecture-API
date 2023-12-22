@@ -3,7 +3,7 @@ using Application.Dtos;
 using MediatR;
 using Application;
 using FluentValidation;
-
+using Application.Validators.User;
 
 namespace API.Controllers.Usercontroller
 {

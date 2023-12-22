@@ -4,9 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Application.Commands.UserAnimal.Add;
 using Application.Commands.UserAnimal.Update;
 using Application.Commands.UserAnimal.Delete;
-using Application.Queries.UserAnimal;
 using Application.Queries.UserAnimal.GetAll;
-using Application.Commands.UserAnimals.UpdateUserAnimal;
 
 namespace API.Controllers.UserAnimalController
 {

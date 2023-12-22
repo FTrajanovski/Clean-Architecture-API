@@ -2,8 +2,9 @@
 using Infrastructure.Database;
 using MediatR;
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Application.Commands.Cats.UpdateCat
@@ -11,21 +12,18 @@ namespace Application.Commands.Cats.UpdateCat
     public class UpdateCatByIdCommandHandler : IRequestHandler<UpdateCatByIdCommand, Cat>
     {
         private readonly RealDatabase _realDatabase;
-        private MockDatabase mockDatabase;
 
         public UpdateCatByIdCommandHandler(RealDatabase realDatabase)
         {
             _realDatabase = realDatabase;
         }
 
-
-
         public Task<Cat> Handle(UpdateCatByIdCommand request, CancellationToken cancellationToken)
         {
-            Cat catToUpdate = _realDatabase.Cats.FirstOrDefault(cat => cat.Id == request.Id)!;
+            Cat catToUpdate = _realDatabase.Cats.FirstOrDefault(Cat => Cat.Id == request.Id)!;
 
-            catToUpdate.Name = request.UpdatedCat.Name;
-            catToUpdate.LikesToPlay = request.UpdatedCat.LikesToPlay;
+            catToUpdate.Name = request.UpdateCat.Name;
+            catToUpdate.LikesToPlay = request.UpdateCat.LikesToPlay;
 
             return Task.FromResult(catToUpdate);
         }

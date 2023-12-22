@@ -2,7 +2,6 @@
 using Domain.Models;
 using Application.Dtos;
 using MediatR;
-using Application;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
@@ -10,6 +9,7 @@ using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using Infrastructure.Database.Repositories.UserRepo;
 using Application.Queries.Users.GetByUsername;
+using Org.BouncyCastle.Crypto.Generators;
 
 namespace API.Controllers
 {
@@ -52,7 +52,7 @@ namespace API.Controllers
 
             // Create an AddUserCommand with the provided details
 
-            user.Username = request.Username;
+            user.UserName = request.UserName;
             user.PasswordHash = passwordHash;
 
 
@@ -66,7 +66,7 @@ namespace API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(UserDto request)
         {
-            var user = await _mediator.Send(new GetByUsernameQuery(request.Username));
+            var user = await _mediator.Send(new GetByUsernameQuery(request.UserName));
 
             // Validate input
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
@@ -109,7 +109,7 @@ namespace API.Controllers
             // Just the username is used as a claim.
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.Username)
+                new Claim(ClaimTypes.Name, user.UserName)
             };
 
             // Fetches the secret key from configuration. Secret key can't be null.

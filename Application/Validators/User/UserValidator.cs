@@ -7,7 +7,7 @@ namespace Application.Validators.User
     {
         public UserValidator()
         {
-            RuleFor(user => user.UserId)
+            RuleFor(user => user.Id)
                 .NotEmpty().WithMessage("User ID cannot be empty")
                 .NotNull().WithMessage("User ID cannot be null")
                 .Must(BeAValidGuid).WithMessage("Invalid User ID format");

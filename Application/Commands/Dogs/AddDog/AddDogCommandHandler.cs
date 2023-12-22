@@ -1,22 +1,21 @@
 ﻿using Application.Queries.Dogs.GetAll;
 using Domain.Models;
+using Infrastructure;
 using Infrastructure.Database;
 using MediatR;
 
-namespace Application.Commands.Dogs.AddDog
+namespace Application.Commands.Dogs
 {
     public class AddDogCommandHandler : IRequestHandler<AddDogCommand, Dog>
     {
-        private readonly RealDatabase _realDatabase;
-        private MockDatabase mockDatabase;
+        private readonly IDogRepository _dogRepository;
 
-        public AddDogCommandHandler(RealDatabase realDatabase)
+        public AddDogCommandHandler(IDogRepository dogRepository)
         {
-            _realDatabase = realDatabase;
+            _dogRepository = dogRepository;
         }
 
-
-        public Task<Dog> Handle(AddDogCommand request, CancellationToken cancellationToken)
+        public async Task<Dog> Handle(AddDogCommand request, CancellationToken cancellationToken)
         {
             Dog dogToCreate = new()
             {
@@ -24,9 +23,9 @@ namespace Application.Commands.Dogs.AddDog
                 Name = request.NewDog.Name
             };
 
-            _realDatabase.Dogs.Add(dogToCreate);
+            await _dogRepository.AddAsync(dogToCreate);
 
-            return Task.FromResult(dogToCreate);
+            return dogToCreate;
         }
     }
 }
