@@ -22,10 +22,7 @@ namespace Application.Commands.Birds.AddBird
             _realDatabase = realDatabase;
         }
 
-        public AddBirdCommandHandler(MockDatabase mockDatabase)
-        {
-            this.mockDatabase = mockDatabase;
-        }
+      
 
         // Implementera logiken för att hantera kommandot och skapa en ny fågel
         public Task<Bird> Handle(AddBirdCommand request, CancellationToken cancellationToken)

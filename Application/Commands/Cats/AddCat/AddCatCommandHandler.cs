@@ -21,10 +21,6 @@ namespace Application.Commands.Cats.AddCat
             _realDatabase = realDatabase;
         }
 
-        public AddCatCommandHandler(MockDatabase mockDatabase)
-        {
-            this.mockDatabase = mockDatabase;
-        }
 
         // Metod för att hantera lägga-till-kattkommandot och returnera en kattmodell
         public Task<Cat> Handle(AddCatCommand request, CancellationToken cancellationToken)

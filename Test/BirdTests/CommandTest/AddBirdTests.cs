@@ -20,7 +20,7 @@ namespace Test.BirdTests.QueryTest
         {
             // Initera handler och mockdatabasen inför varje test
             _mockDatabase = new MockDatabase();
-            _handler = new AddBirdCommandHandler(_mockDatabase);
+            _handler = new AddBirdCommandHandler(_realDatabase);
         }
 
         [Test]

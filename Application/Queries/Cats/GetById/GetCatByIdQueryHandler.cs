@@ -15,11 +15,6 @@ namespace Application.Queries.Cats.GetById
             _realDatabase = realDatabase;
         }
 
-        public GetCatByIdQueryHandler(MockDatabase mockDatabase)
-        {
-            this.mockDatabase = mockDatabase;
-        }
-
         public Task<Cat> Handle(GetCatByIdQuery request, CancellationToken cancellationToken)
         {
             Cat wantedCat = _realDatabase.Cats.FirstOrDefault(cat => cat.Id == request.Id)!;

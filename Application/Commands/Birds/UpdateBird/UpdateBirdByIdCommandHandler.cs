@@ -22,11 +22,6 @@ namespace Application.Commands.Birds.UpdateBird
             _realDatabase = realDatabase;
         }
 
-        public UpdateBirdByIdCommandHandler(MockDatabase mockDatabase)
-        {
-            this.mockDatabase = mockDatabase;
-        }
-
         // Metod för att hantera uppdateringsbegäran för fågelkommandot
         public Task<Bird> Handle(UpdateBirdByIdCommand request, CancellationToken cancellationToken)
         {

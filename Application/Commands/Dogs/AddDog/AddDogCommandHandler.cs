@@ -15,10 +15,6 @@ namespace Application.Commands.Dogs.AddDog
             _realDatabase = realDatabase;
         }
 
-        public AddDogCommandHandler(MockDatabase mockDatabase)
-        {
-            this.mockDatabase = mockDatabase;
-        }
 
         public Task<Dog> Handle(AddDogCommand request, CancellationToken cancellationToken)
         {

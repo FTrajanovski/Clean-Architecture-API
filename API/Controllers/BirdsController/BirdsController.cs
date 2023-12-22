@@ -1,198 +1,74 @@
-﻿using Application.Commands.Birds;
-using Application.Commands.Birds.AddBird;
+﻿using Microsoft.AspNetCore.Mvc;
+using Application.Dtos;
+using MediatR;
 using Application.Commands.Birds.DeleteBird;
 using Application.Commands.Birds.UpdateBird;
-using Application.Dtos;
 using Application.Queries.Birds.GetAll;
-using Application.Queries.Birds.GetBirdsByColor;
 using Application.Queries.Birds.GetById;
-using Application.Validators.Bird;
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging; // Lägg till detta
-using System;
-using System.Threading.Tasks;
+using Application.Commands.Birds.AddBird;
 
-namespace API.Controllers.BirdsController
+
+namespace API.Controllers.Birdscontroller
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class BirdsController : ControllerBase
+    public class BirdsController : Controller
     {
         internal readonly IMediator _mediator;
-        private readonly ILogger<BirdsController> _logger; // Lägg till logger
-
-        private readonly BirdValidator _birdValidator;
-        private readonly GuidValidator _guidValidator;
-        private readonly GetBirdsByColorValidator _getBirdsByColorValidator;
-
-        // Konstruktor som tar en instans av IMediator och valideringsklasserna
-        public BirdsController(
-            IMediator mediator,
-            ILogger<BirdsController> logger, // Lägg till logger
-            BirdValidator birdValidator,
-            GuidValidator guidValidator,
-            GetBirdsByColorValidator getBirdsByColorValidator)
+        public BirdsController(IMediator mediator)
         {
             _mediator = mediator;
-            _logger = logger; // Lägg till logger
-            _birdValidator = birdValidator;
-            _guidValidator = guidValidator;
-            _getBirdsByColorValidator = getBirdsByColorValidator;
         }
 
-        // ...
-
+        // Get all Birds from Db
         [HttpGet]
         [Route("getAllBirds")]
         public async Task<IActionResult> GetAllBirds()
         {
-            try
-            {
-                _logger.LogInformation("Fetching all birds from the database.");
-                var birds = await _mediator.Send(new GetAllBirdsQuery());
-                _logger.LogInformation("Successfully retrieved all birds.");
-                return Ok(birds);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"An error occurred while fetching all birds: {ex.Message}");
-                return StatusCode(500, "Internal Server Error");
-            }
+            return Ok(await _mediator.Send(new GetAllBirdsQuery()));
+            // Return Ok(Get All Birds)
         }
 
-        // ...
-
+        // Get Bird By Id
+        [HttpGet]
+        [Route("getBirdById/{birdId}")]
+        public async Task<IActionResult> GetBirdById(Guid birdId)
+        {
+            return Ok(await _mediator.Send(new GetBirdByIdQuery(birdId)));
+        }
+        // Create a new Bird
         [HttpPost]
         [Route("addNewBird")]
         public async Task<IActionResult> AddBird([FromBody] BirdDto newBird)
         {
-            try
-            {
-                // Validera fågeln
-                var validationResult = _birdValidator.Validate(newBird);
-                if (!validationResult.IsValid)
-                {
-                    _logger.LogWarning($"Failed to add a new bird due to validation errors: {string.Join(", ", validationResult.Errors)}");
-                    return BadRequest(validationResult.Errors);
-                }
+            return Ok(await _mediator.Send(new AddBirdCommand(newBird)));
 
-                _logger.LogInformation($"Adding a new bird: {newBird.Name}");
-                return Ok(await _mediator.Send(new AddBirdCommand(newBird)));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"An error occurred while adding a new bird: {ex.Message}");
-                return StatusCode(500, "Internal Server Error");
-            }
         }
-
-        // ...
-
+        // Update a specific Bird
         [HttpPut]
-        [Route("updateBird/{birdId}")]
-        public async Task<IActionResult> UpdateBird(Guid birdId, [FromBody] BirdDto updatedBird)
+        [Route("updateBird/{updateBirdId}")]
+        public async Task<IActionResult> UpdateBird([FromBody] BirdDto updatedBird, Guid updateBirdId)
         {
-            try
-            {
-                // Validera ID
-                var idValidationResult = _guidValidator.Validate(birdId);
-                if (!idValidationResult.IsValid)
-                {
-                    _logger.LogWarning($"Failed to update bird with ID {birdId} due to validation errors: {string.Join(", ", idValidationResult.Errors)}");
-                    return BadRequest(idValidationResult.Errors);
-                }
-
-                // Validera fågeln
-                var birdValidationResult = _birdValidator.Validate(updatedBird);
-                if (!birdValidationResult.IsValid)
-                {
-                    _logger.LogWarning($"Failed to update bird with ID {birdId} due to validation errors: {string.Join(", ", birdValidationResult.Errors)}");
-                    return BadRequest(birdValidationResult.Errors);
-                }
-
-                var command = new UpdateBirdByIdCommand(updatedBird, birdId);
-                var result = await _mediator.Send(command);
-
-                if (result != null)
-                {
-                    _logger.LogInformation($"Successfully updated bird with ID {birdId}");
-                    return Ok(result);
-                }
-                else
-                {
-                    _logger.LogWarning($"Failed to update bird with ID {birdId} because it was not found.");
-                    return NotFound("Bird not found.");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"An error occurred while updating bird with ID {birdId}: {ex.Message}");
-                return StatusCode(500, "Internal Server Error");
-            }
+            return Ok(await _mediator.Send(new UpdateBirdByIdCommand(updatedBird, updateBirdId)));
         }
 
-        // ...
-
-        [HttpDelete]
-        [Route("deleteBird/{birdId}")]
-        public async Task<IActionResult> DeleteBird(Guid birdId)
+        // Delete a specific Bird
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteBirdById(Guid id)
         {
-            try
+            var bird = await _mediator.Send(new DeleteBirdByIdCommand(id));
+            if (bird != null)
             {
-                // Validera ID
-                var idValidationResult = _guidValidator.Validate(birdId);
-                if (!idValidationResult.IsValid)
-                {
-                    _logger.LogWarning($"Failed to delete bird with ID {birdId} due to validation errors: {string.Join(", ", idValidationResult.Errors)}");
-                    return BadRequest(idValidationResult.Errors);
-                }
-
-                var success = await _mediator.Send(new DeleteBirdCommand(birdId));
-
-                if (success)
-                {
-                    _logger.LogInformation($"Successfully deleted bird with ID {birdId}");
-                    return Ok("Bird deleted successfully.");
-                }
-                else
-                {
-                    _logger.LogWarning($"Failed to delete bird with ID {birdId} because it was not found.");
-                    return NotFound("Bird not found.");
-                }
+                return NoContent();
             }
-            catch (Exception ex)
-            {
-                _logger.LogError($"An error occurred while deleting bird with ID {birdId}: {ex.Message}");
-                return StatusCode(500, "Internal Server Error");
-            }
+            return NotFound();
         }
 
-        // ...
 
-        [HttpGet]
-        [Route("getBirdsByColor")]
-        public async Task<IActionResult> GetBirdsByColor([FromQuery] GetBirdsByColorQuery query)
-        {
-            try
-            {
-                // Validera query
-                var validationResult = _getBirdsByColorValidator.Validate(query);
-                if (!validationResult.IsValid)
-                {
-                    _logger.LogWarning($"Failed to fetch birds by color due to validation errors: {string.Join(", ", validationResult.Errors)}");
-                    return BadRequest(validationResult.Errors);
-                }
 
-                var result = await _mediator.Send(query);
-                _logger.LogInformation($"Successfully retrieved birds by color: {query.Color}");
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"An error occurred while fetching birds by color: {ex.Message}");
-                return StatusCode(500, "Internal Server Error");
-            }
-        }
+
+
     }
+
+
 }

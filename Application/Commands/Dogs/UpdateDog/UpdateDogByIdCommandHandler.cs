@@ -14,11 +14,7 @@ namespace Application.Commands.Dogs.UpdateDog
             _realDatabase = realDatabase;
         }
 
-        public UpdateDogByIdCommandHandler(MockDatabase mockDatabase)
-        {
-            this.mockDatabase = mockDatabase;
-        }
-
+      
         public Task<Dog> Handle(UpdateDogByIdCommand request, CancellationToken cancellationToken)
         {
             Dog dogToUpdate = _realDatabase.Dogs.FirstOrDefault(dog => dog.Id == request.Id)!;

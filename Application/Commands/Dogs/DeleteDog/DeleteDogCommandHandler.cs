@@ -16,10 +16,6 @@ namespace Application.Commands.Dogs.DeleteDog
             _realDatabase = realDatabase;
         }
 
-        public DeleteDogCommandHandler(MockDatabase mockDatabase)
-        {
-            this.mockDatabase = mockDatabase;
-        }
 
         public Task<bool> Handle(DeleteDogCommand request, CancellationToken cancellationToken)
         {

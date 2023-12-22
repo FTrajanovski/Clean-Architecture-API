@@ -19,10 +19,7 @@ namespace Application.Queries.Birds.GetById
             _realDatabase = realDatabase;
         }
 
-        public GetBirdByIdQueryHandler(MockDatabase mockDatabase)
-        {
-            this.mockDatabase = mockDatabase;
-        }
+        
 
         // En metod som implementerar hanteringen av frågan
         public Task<Bird> Handle(GetBirdByIdQuery request, CancellationToken cancellationToken)

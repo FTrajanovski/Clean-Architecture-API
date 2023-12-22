@@ -14,11 +14,6 @@ namespace Application.Commands.User.AddUser
             _dbContext = dbContext;
         }
 
-        public AddUserCommandHandler(MockDatabase mockDatabase)
-        {
-            this.mockDatabase = mockDatabase;
-        }
-
         public async Task<UserDto> Handle(AddUserCommand request, CancellationToken cancellationToken)
         {
             var newUser = new Domain.Models.User

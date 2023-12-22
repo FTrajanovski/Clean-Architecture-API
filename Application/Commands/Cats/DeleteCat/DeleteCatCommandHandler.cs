@@ -17,10 +17,6 @@ namespace Application.Commands.Cats.DeleteCat
             _realDatabase = realDatabase;
         }
 
-        public DeleteCatCommandHandler(MockDatabase mockDatabase)
-        {
-            this.mockDatabase = mockDatabase;
-        }
 
         public Task<bool> Handle(DeleteCatCommand request, CancellationToken cancellationToken)
         {

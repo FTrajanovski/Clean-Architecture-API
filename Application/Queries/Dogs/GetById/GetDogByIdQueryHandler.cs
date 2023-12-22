@@ -14,10 +14,6 @@ namespace Application.Queries.Dogs.GetById
             _realDatabase = realDatabase;
         }
 
-        public GetDogByIdQueryHandler(MockDatabase mockDatabase)
-        {
-            this.mockDatabase = mockDatabase;
-        }
 
         public Task<Dog> Handle(GetDogByIdQuery request, CancellationToken cancellationToken)
         {

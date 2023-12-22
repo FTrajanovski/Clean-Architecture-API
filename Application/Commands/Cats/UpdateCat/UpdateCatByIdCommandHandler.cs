@@ -18,10 +18,7 @@ namespace Application.Commands.Cats.UpdateCat
             _realDatabase = realDatabase;
         }
 
-        public UpdateCatByIdCommandHandler(MockDatabase mockDatabase)
-        {
-            this.mockDatabase = mockDatabase;
-        }
+
 
         public Task<Cat> Handle(UpdateCatByIdCommand request, CancellationToken cancellationToken)
         {
