@@ -4,169 +4,126 @@ using Application.Commands.Cats.UpdateCat;
 using Application.Dtos;
 using Application.Queries.Cats.GetAll;
 using Application.Queries.Cats.GetById;
+using Application.Queries.Cats.GetWeight;
+using Application.Validators;
 using Application.Validators.Cat;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging; // Lägg till detta
-using System;
-using System.Threading.Tasks;
 
 namespace API.Controllers.CatsController
 {
-    [Route("api/[controller]")]
+    [Route("/[controller]")]
     [ApiController]
-    public class CatsController : ControllerBase
+    public class CatsController : Controller
     {
         internal readonly IMediator _mediator;
-        private readonly CatValidator _catValidator;
-        private readonly GuidValidator _guidValidator;
-        private readonly ILogger<CatsController> _logger; // Lägg till logger
-
-        // Konstruktor som tar en instans av IMediator, valideringsklasserna och logger
-        public CatsController(IMediator mediator, CatValidator catValidator, GuidValidator guidValidator, ILogger<CatsController> logger)
+        internal readonly CatValidator _catValidator;
+        internal readonly GuidValidator _guidValidator;
+        public CatsController(IMediator mediator, CatValidator catValidator, GuidValidator guidValidator)
         {
             _mediator = mediator;
             _catValidator = catValidator;
             _guidValidator = guidValidator;
-            _logger = logger; // Lägg till logger
         }
 
-        // Hämta alla katter från databasen
+        // Get all cats from database
         [HttpGet]
         [Route("getAllCats")]
         public async Task<IActionResult> GetAllCats()
         {
-            try
-            {
-                _logger.LogInformation("Getting all cats from the database.");
-                return Ok(await _mediator.Send(new GetAllCatsQuery()));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"An error occurred while getting all cats: {ex.Message}");
-                return StatusCode(500, "Internal server error");
-            }
+            return Ok(await _mediator.Send(new GetAllCatsQuery()));
         }
 
-        // Hämta en katt med ett specifikt ID
+        // Get a cat by Id
         [HttpGet]
         [Route("getCatById/{catId}")]
         public async Task<IActionResult> GetCatById(Guid catId)
         {
-            try
+            var guidValidator = _guidValidator.Validate(catId);
+
+            if (!guidValidator.IsValid)
             {
-                _logger.LogInformation($"Getting cat with ID: {catId}");
-                return Ok(await _mediator.Send(new GetCatByIdQuery(catId)));
+                return BadRequest(guidValidator.Errors.ConvertAll(errors => errors.ErrorMessage));
             }
-            catch (Exception ex)
+
+            var cat = await _mediator.Send(new GetCatByIdQuery(catId));
+
+            if (cat == null)
             {
-                _logger.LogError($"An error occurred while getting cat with ID {catId}: {ex.Message}");
-                return StatusCode(500, "Internal server error");
+                return NotFound();
             }
+
+            return Ok(cat);
         }
 
-        // Skapa en ny katt
+        [HttpGet]
+        [Route("getCatsByWeightOrBreed")]
+        public async Task<IActionResult> GetAllCatsByWeight(int? weight, string? breed)
+        {
+            return Ok(await _mediator.Send(new GetCatsByWeightOrBreedQuery { Weight = weight, Breed = breed }));
+        }
+
+        //[Authorize]
         [HttpPost]
         [Route("addNewCat")]
-        public async Task<IActionResult> AddCat([FromBody] CatDto newCat)
+        public async Task<IActionResult> AddCat([FromBody] CatDto newCat, Guid userId)
         {
-            try
-            {
-                // Validera katten
-                var validationResult = _catValidator.Validate(newCat);
-                if (!validationResult.IsValid)
-                {
-                    _logger.LogWarning("Invalid data received while adding a new cat.");
-                    return BadRequest(validationResult.Errors);
-                }
+            var catValidate = _catValidator.Validate(newCat);
 
-                _logger.LogInformation($"Adding a new cat: {newCat.Name}");
-                return Ok(await _mediator.Send(new AddCatCommand(newCat)));
-            }
-            catch (Exception ex)
+            if (!catValidate.IsValid)
             {
-                _logger.LogError($"An error occurred while adding a new cat: {ex.Message}");
-                return StatusCode(500, "Internal server error");
+                return BadRequest(catValidate.Errors.ConvertAll(errors => errors.ErrorMessage));
             }
+
+            return Ok(await _mediator.Send(new AddCatCommand(newCat, userId)));
         }
 
-        // Uppdatera en specifik katt
+        [Authorize]
         [HttpPut]
-        [Route("updateCat/{catId}")]
-        public async Task<IActionResult> UpdateCat(Guid catId, [FromBody] CatDto updatedCat)
+        [Route("updateCat/{updateCatId}")]
+        public async Task<IActionResult> UpdateCatById([FromBody] CatDto catToUpdate, Guid updateCatId)
         {
-            try
+            var guidValidator = _guidValidator.Validate(updateCatId);
+
+            if (!guidValidator.IsValid)
             {
-                // Validera ID
-                var idValidationResult = _guidValidator.Validate(catId);
-                if (!idValidationResult.IsValid)
-                {
-                    _logger.LogWarning($"Invalid cat ID received: {catId}");
-                    return BadRequest(idValidationResult.Errors);
-                }
-
-                // Validera katten
-                var catValidationResult = _catValidator.Validate(updatedCat);
-                if (!catValidationResult.IsValid)
-                {
-                    _logger.LogWarning("Invalid data received while updating a cat.");
-                    return BadRequest(catValidationResult.Errors);
-                }
-
-                _logger.LogInformation($"Updating cat with ID: {catId}");
-                var command = new UpdateCatByIdCommand(updatedCat, catId);
-                var result = await _mediator.Send(command);
-
-                if (result != null)
-                {
-                    return Ok(result);
-                }
-                else
-                {
-                    _logger.LogWarning($"Cat with ID {catId} not found.");
-                    return NotFound("Cat not found.");
-                }
+                return BadRequest(guidValidator.Errors.ConvertAll(errors => errors.ErrorMessage));
             }
-            catch (Exception ex)
+
+            var catValidate = _catValidator.Validate(catToUpdate);
+
+            if (!catValidate.IsValid)
             {
-                _logger.LogError($"An error occurred while updating cat with ID {catId}: {ex.Message}");
-                return StatusCode(500, "Internal server error");
+                return BadRequest(catValidate.Errors.ConvertAll(errors => errors.ErrorMessage));
             }
+
+            var cat = await _mediator.Send(new UpdateCatByIdCommand(catToUpdate, updateCatId));
+
+            if (cat == null)
+            {
+                return NotFound($"Cat with Id:{updateCatId} does not exist in database");
+            }
+
+            return Ok(cat);
+
         }
 
-        // Ta bort en specifik katt
+        [Authorize]
         [HttpDelete]
-        [Route("deleteCat/{catId}")]
-        public async Task<IActionResult> DeleteCat(Guid catId)
+        [Route("deleteCat/{deleteCatId}")]
+        public async Task<IActionResult> DeleteCat(Guid deleteCatId)
         {
-            try
-            {
-                // Validera ID
-                var idValidationResult = _guidValidator.Validate(catId);
-                if (!idValidationResult.IsValid)
-                {
-                    _logger.LogWarning($"Invalid cat ID received: {catId}");
-                    return BadRequest(idValidationResult.Errors);
-                }
+            var guidValidator = _guidValidator.Validate(deleteCatId);
 
-                _logger.LogInformation($"Deleting cat with ID: {catId}");
-                var success = await _mediator.Send(new DeleteCatCommand(catId));
-
-                if (success)
-                {
-                    return Ok("Cat deleted successfully.");
-                }
-                else
-                {
-                    _logger.LogWarning($"Cat with ID {catId} not found.");
-                    return NotFound("Cat not found.");
-                }
-            }
-            catch (Exception ex)
+            if (!guidValidator.IsValid)
             {
-                _logger.LogError($"An error occurred while deleting cat with ID {catId}: {ex.Message}");
-                return StatusCode(500, "Internal server error");
+                return BadRequest(guidValidator.Errors.ConvertAll(errors => errors.ErrorMessage));
             }
+
+            var result = await _mediator.Send(new DeleteCatByIdCommand(deleteCatId));
+
+            return NoContent();
         }
     }
 }
