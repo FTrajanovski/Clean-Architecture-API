@@ -19,14 +19,12 @@ namespace Infrastructure.Migrations
                 .HasAnnotation("ProductVersion", "6.0.25")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            modelBuilder.Entity("Domain.Models.Bird", b =>
+            modelBuilder.Entity("Domain.Models.Animal.AnimalModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<bool>("CanFly")
-                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -34,40 +32,26 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Birds");
                 });
 
-            modelBuilder.Entity("Domain.Models.Cat", b =>
                 {
-                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<bool>("LikesToPlay")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.HasKey("Id");
 
-                    b.ToTable("Cats");
                 });
 
             modelBuilder.Entity("Domain.Models.Dog", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.HasKey("Id");
 
-                    b.ToTable("Dogs");
                 });
 #pragma warning restore 612, 618
         }
