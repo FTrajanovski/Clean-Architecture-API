@@ -61,7 +61,7 @@ namespace API.Controllers.UserAnimalController
                 }
 
                 _logger.LogInformation("Adding a new user animal relationship.");
-                var result = await _mediator.Send(new AddUserAnimalCommand(userAnimalDto));
+                var result = await _mediator.Send(new AddAnimalUserConnectionCommand(userAnimalDto));
 
                 if (result)
                 {
@@ -122,7 +122,7 @@ namespace API.Controllers.UserAnimalController
             try
             {
                 _logger.LogInformation($"Deleting user animal relationship for User ID: {userId} and Animal ID: {animalId}");
-                var success = await _mediator.Send(new DeleteUserAnimalCommand(userId, animalId));
+                var success = await _mediator.Send(new DeleteAnimalUserConnectionCommand(userId, animalId));
 
                 if (success)
                 {

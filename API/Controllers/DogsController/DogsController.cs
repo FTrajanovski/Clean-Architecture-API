@@ -146,7 +146,7 @@ namespace API.Controllers.DogsController
                 }
 
                 _logger.LogInformation($"Deleting dog with ID: {dogId}");
-                var success = await _mediator.Send(new DeleteDogCommand(dogId));
+                var success = await _mediator.Send(new DeleteDogByIdCommand(dogId));
 
                 if (success)
                 {

@@ -86,7 +86,7 @@ namespace API.Controllers
                 }
 
                 _logger.LogInformation($"Updating user with ID: {userId}");
-                var command = new UpdateUserCommand(updatedUser, userId);
+                var command = new UpdateUserByIdCommand(updatedUser, userId);
                 var result = await _mediator.Send(command);
 
                 if (result != null)
@@ -113,7 +113,7 @@ namespace API.Controllers
             try
             {
                 _logger.LogInformation($"Deleting user with ID: {userId}");
-                var success = await _mediator.Send(new DeleteUserCommand(userId));
+                var success = await _mediator.Send(new DeleteUserByIdCommand(userId));
 
                 if (success)
                 {

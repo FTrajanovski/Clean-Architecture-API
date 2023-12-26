@@ -11,7 +11,7 @@ namespace Test.BirdTests.CommandTest
     [TestFixture]
     public class DeleteBirdTests
     {
-        private DeleteBirdCommandHandler _handler;
+        private DeleteBirdByIdCommandHandler _handler;
         private MockDatabase _mockDatabase;
 
         [SetUp]
@@ -19,7 +19,7 @@ namespace Test.BirdTests.CommandTest
         {
             // Initialize the handler and mock database before each test
             _mockDatabase = new MockDatabase();
-            _handler = new DeleteBirdCommandHandler(_mockDatabase);
+            _handler = new DeleteBirdByIdCommandHandler(_mockDatabase);
         }
 
         [Test]

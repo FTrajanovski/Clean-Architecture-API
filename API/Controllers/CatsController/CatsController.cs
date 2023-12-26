@@ -150,7 +150,7 @@ namespace API.Controllers.CatsController
                 }
 
                 _logger.LogInformation($"Deleting cat with ID: {catId}");
-                var success = await _mediator.Send(new DeleteCatCommand(catId));
+                var success = await _mediator.Send(new DeleteCatByIdCommand(catId));
 
                 if (success)
                 {
