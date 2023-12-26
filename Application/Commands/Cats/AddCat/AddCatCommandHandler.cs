@@ -1,47 +1,33 @@
 ﻿using Domain.Models;
-using Infrastructure.Database;
+using Infrastructure.Repositories.Cats;
 using MediatR;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
-// Implementera en hanterare (AddCatCommandHandler) för att behandla lägga-till-kattkommandot
 namespace Application.Commands.Cats.AddCat
 {
-    // Implementera IRequestHandler-gränssnittet för att hantera AddCatCommand och returnera en kattmodell
     public class AddCatCommandHandler : IRequestHandler<AddCatCommand, Cat>
     {
-        // Privat variabel för att hålla referensen till en mockdatabas
-        private readonly RealDatabase _realDatabase;
-        private MockDatabase mockDatabase;
+        private readonly ICatRepository _catRepository;
 
-        // Konstruktor som tar emot en instans av mockdatabasen och tilldelar den privata variabeln
-        public AddCatCommandHandler(RealDatabase realDatabase)
+        public AddCatCommandHandler(ICatRepository catRepository)
         {
-            _realDatabase = realDatabase;
+            _catRepository = catRepository;
         }
 
-        public AddCatCommandHandler(MockDatabase mockDatabase)
+        public async Task<Cat> Handle(AddCatCommand request, CancellationToken cancellationToken)
         {
-            this.mockDatabase = mockDatabase;
-        }
 
-        // Metod för att hantera lägga-till-kattkommandot och returnera en kattmodell
-        public Task<Cat> Handle(AddCatCommand request, CancellationToken cancellationToken)
-        {
-            // Skapa en ny kattmodell med ett unikt ID och attribut från det nya kattkommandot
             Cat catToCreate = new()
             {
-                Id = Guid.NewGuid(),
+                AnimalId = Guid.NewGuid(),
                 Name = request.NewCat.Name,
-                LikesToPlay = request.NewCat.LikesToPlay
+                Breed = request.NewCat.Breed,
+                Weight = request.NewCat.Weight
             };
 
-            // Lägg till den nya katten i mockdatabasen
-            _realDatabase.Cats.Add(catToCreate);
+            await _catRepository.AddCat(catToCreate, request.UserId);
 
-            // Returnera den nya kattmodellen som svar på kommandot
-            return Task.FromResult(catToCreate);
+
+            return catToCreate;
         }
     }
 }

@@ -1,44 +1,33 @@
 ﻿using Domain.Models;
-using Infrastructure.Database;
+using Infrastructure.Repositories.Birds;
 using MediatR;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
-// Implementera en hanterare (UpdateBirdByIdCommandHandler) för att behandla begäran om att uppdatera en fågel baserat på ID
 namespace Application.Commands.Birds.UpdateBird
 {
-    // Implementera IRequestHandler-gränssnittet för att hantera uppdatering av fågelkommandon och returnera en fågelmodell
     public class UpdateBirdByIdCommandHandler : IRequestHandler<UpdateBirdByIdCommand, Bird>
     {
-        // Privat fält för att hålla en databasreferens
-        private readonly RealDatabase _realDatabase;
-        private MockDatabase mockDatabase;
+        private readonly IBirdRepository _birdRepository;
 
-        // Konstruktor för att ta emot en mockdatabasreferens och tilldela den privata variabeln
-        public UpdateBirdByIdCommandHandler(RealDatabase realDatabase)
+        public UpdateBirdByIdCommandHandler(IBirdRepository birdRepository)
         {
-            _realDatabase = realDatabase;
+            _birdRepository = birdRepository;
         }
 
-        public UpdateBirdByIdCommandHandler(MockDatabase mockDatabase)
+        public async Task<Bird> Handle(UpdateBirdByIdCommand request, CancellationToken cancellationToken)
         {
-            this.mockDatabase = mockDatabase;
-        }
+            Bird birdToUpdate = await _birdRepository.GetBirdById(request.Id);
 
-        // Metod för att hantera uppdateringsbegäran för fågelkommandot
-        public Task<Bird> Handle(UpdateBirdByIdCommand request, CancellationToken cancellationToken)
-        {
-            // Hämta fågeln som ska uppdateras baserat på ID från mockdatabasen
-            Bird birdToUpdate = _realDatabase.Birds.FirstOrDefault(bird => bird.Id == request.Id)!;
+            if (birdToUpdate == null)
+            {
+                return null!;
+            }
 
-            // Uppdatera fågelns namn och flygförmåga med de nya värdena från kommandot
-            birdToUpdate.Name = request.UpdatedBird.Name;
-            birdToUpdate.CanFly = request.UpdatedBird.CanFly;
+            birdToUpdate.Name = request.BirdToUpdate.Name;
+            birdToUpdate.CanFly = request.BirdToUpdate.CanFly;
 
-            // Returnera den uppdaterade fågeln
-            return Task.FromResult(birdToUpdate);
+            var updatedBird = await _birdRepository.UpdateBird(birdToUpdate);
+
+            return updatedBird;
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Test.DogTests.CommandTest
     [TestFixture]
     public class DeleteDogTests
     {
-        private DeleteDogCommandHandler _handler;
+        private DeleteDogByIdCommandHandler _handler;
         private MockDatabase _mockDatabase;
 
         [SetUp]
@@ -19,7 +19,7 @@ namespace Test.DogTests.CommandTest
         {
             // Initialize the handler and mock database before each test
             _mockDatabase = new MockDatabase();
-            _handler = new DeleteDogCommandHandler(_mockDatabase);
+            _handler = new DeleteDogByIdCommandHandler(_mockDatabase);
         }
 
         [Test]
@@ -27,7 +27,7 @@ namespace Test.DogTests.CommandTest
         {
             // Arrange
             var existingDogId = _mockDatabase.Dogs.First().Id; // Assuming there's at least one dog in the database
-            var command = new DeleteDogCommand(existingDogId);
+            var command = new DeleteDogByIdCommand(existingDogId);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -42,7 +42,7 @@ namespace Test.DogTests.CommandTest
         {
             // Arrange
             var nonExistingDogId = Guid.NewGuid(); // Assuming this ID does not exist in the database
-            var command = new DeleteDogCommand(nonExistingDogId);
+            var command = new DeleteDogByIdCommand(nonExistingDogId);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);

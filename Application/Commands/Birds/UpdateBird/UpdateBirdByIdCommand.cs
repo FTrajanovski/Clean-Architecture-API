@@ -2,25 +2,22 @@
 using Domain.Models;
 using MediatR;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-// Skapa ett kommando (UpdateBirdByIdCommand) för att begära uppdatering av fågel baserat på ID
 namespace Application.Commands.Birds.UpdateBird
 {
-    // Implementera IRequest-gränssnittet för att hantera uppdatering av fågelkommandot och returnera en fågelmodell
     public class UpdateBirdByIdCommand : IRequest<Bird>
     {
-        // Konstruktor för att skapa ett uppdaterat fågelobjekt och behålla ID
-        public UpdateBirdByIdCommand(BirdDto updatedBird, Guid id)
+        public UpdateBirdByIdCommand(BirdDto birdToUpdate, Guid id)
         {
-            UpdatedBird = updatedBird;
+            BirdToUpdate = birdToUpdate;
             Id = id;
         }
 
-        // Egenskap för att hålla det uppdaterade fågelobjektet
-        public BirdDto UpdatedBird { get; }
-
-        // Egenskap för att hålla fågelns ID som ska uppdateras
+        public BirdDto BirdToUpdate { get; }
         public Guid Id { get; }
     }
-
 }

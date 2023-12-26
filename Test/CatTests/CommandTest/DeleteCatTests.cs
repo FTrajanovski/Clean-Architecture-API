@@ -11,7 +11,7 @@ namespace Test.CatTests.CommandTest
     [TestFixture]
     public class DeleteCatTests
     {
-        private DeleteCatCommandHandler _handler;
+        private DeleteCatByIdCommandHandler _handler;
         private MockDatabase _mockDatabase;
 
         [SetUp]
@@ -19,7 +19,7 @@ namespace Test.CatTests.CommandTest
         {
             // Initialize the handler and mock database before each test
             _mockDatabase = new MockDatabase();
-            _handler = new DeleteCatCommandHandler(_mockDatabase);
+            _handler = new DeleteCatByIdCommandHandler(_mockDatabase);
         }
 
         [Test]
@@ -27,7 +27,7 @@ namespace Test.CatTests.CommandTest
         {
             // Arrange
             var existingCatId = _mockDatabase.Cats.First().Id; // Assuming there's at least one cat in the database
-            var command = new DeleteCatCommand(existingCatId);
+            var command = new DeleteCatByIdCommand(existingCatId);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -42,7 +42,7 @@ namespace Test.CatTests.CommandTest
         {
             // Arrange
             var nonExistingCatId = Guid.NewGuid(); // Assuming this ID does not exist in the database
-            var command = new DeleteCatCommand(nonExistingCatId);
+            var command = new DeleteCatByIdCommand(nonExistingCatId);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);

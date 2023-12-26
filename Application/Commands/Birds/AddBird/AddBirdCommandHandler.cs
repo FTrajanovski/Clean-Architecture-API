@@ -1,48 +1,32 @@
 ﻿using Domain.Models;
-using Infrastructure.Database;
+using Infrastructure.Repositories.Birds;
 using MediatR;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
-
-// Skapa en hanterare (AddBirdCommandHandler) för att hantera logiken för att lägga till en ny fågel
 namespace Application.Commands.Birds.AddBird
 {
-    // Implementera IRequestHandler-gränssnittet för att hantera AddBirdCommand och producera en Bird
     public class AddBirdCommandHandler : IRequestHandler<AddBirdCommand, Bird>
     {
-        // En privat referens till den mockade databasen där fåglar lagras
-        private readonly RealDatabase _realDatabase;
-        private MockDatabase mockDatabase;
+        private readonly IBirdRepository _birdRepository;
 
-        // Konstruktor som tar en mockad databas som en parameter och lagrar den för användning
-        public AddBirdCommandHandler(RealDatabase realDatabase)
+        public AddBirdCommandHandler(IBirdRepository birdRepository)
         {
-            _realDatabase = realDatabase;
+            _birdRepository = birdRepository;
         }
 
-        public AddBirdCommandHandler(MockDatabase mockDatabase)
+        public async Task<Bird> Handle(AddBirdCommand request, CancellationToken cancellationToken)
         {
-            this.mockDatabase = mockDatabase;
-        }
-
-        // Implementera logiken för att hantera kommandot och skapa en ny fågel
-        public Task<Bird> Handle(AddBirdCommand request, CancellationToken cancellationToken)
-        {
-            // Skapa en ny fågel med ett unikt ID och egenskaper från BirdDto i kommandot
             Bird birdToCreate = new()
             {
-                Id = Guid.NewGuid(),
+                AnimalId = Guid.NewGuid(),
                 Name = request.NewBird.Name,
-                CanFly = request.NewBird.CanFly
+                CanFly = request.NewBird.CanFly,
+                Color = request.NewBird.Color
+
             };
 
-            // Lägg till den nya fågeln i den mockade databasen
-            _realDatabase.Birds.Add(birdToCreate);
+            await _birdRepository.AddBird(birdToCreate, request.UserId);
 
-            // Returnera den skapade fågeln som resultat av hanteringen
-            return Task.FromResult(birdToCreate);
+            return birdToCreate;
         }
     }
 }
