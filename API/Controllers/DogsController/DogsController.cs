@@ -4,14 +4,14 @@ using Application.Commands.Dogs.DeleteDog;
 using Application.Commands.Dogs.UpdateDog;
 using Application.Dtos;
 using Application.Queries.Dogs.GetAll;
-using Application.Queries.Dogs.GetByProperties;
 using Application.Queries.Dogs.GetById;
+using Application.Queries.Dogs.GetWeightAndBreed;
+using Application.Validators;
 using Application.Validators.Dog;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging; // Lägg till detta
-using System;
-using System.Threading.Tasks;
+
+// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace API.Controllers.DogsController
 {
@@ -20,175 +20,153 @@ namespace API.Controllers.DogsController
     public class DogsController : ControllerBase
     {
         internal readonly IMediator _mediator;
-        private readonly DogValidator _dogValidator;
-        private readonly GuidValidator _guidValidator;
-        private readonly GetDogsByPropertiesValidator _getDogsByPropertiesValidator;
-        private readonly ILogger<DogsController> _logger; // Lägg till logger
-
-        // Konstruktor som tar in en instans av IMediator, valideringsklasserna och logger
-        public DogsController(IMediator mediator, DogValidator dogValidator, GuidValidator guidValidator, GetDogsByPropertiesValidator getDogsByPropertiesValidator, ILogger<DogsController> logger)
+        internal readonly DogValidator _dogValidator;
+        internal readonly GuidValidator _guidValidator;
+        public DogsController(IMediator mediator, DogValidator dogValidator, GuidValidator guidValidator)
         {
             _mediator = mediator;
             _dogValidator = dogValidator;
             _guidValidator = guidValidator;
-            _getDogsByPropertiesValidator = getDogsByPropertiesValidator;
-            _logger = logger; // Lägg till logger
         }
 
-        // Hämta alla hundar från databasen
+        // Get all dogs from database
         [HttpGet]
         [Route("getAllDogs")]
         public async Task<IActionResult> GetAllDogs()
         {
             try
             {
-                _logger.LogInformation("Getting all dogs from the database.");
                 return Ok(await _mediator.Send(new GetAllDogsQuery()));
             }
             catch (Exception ex)
             {
-                _logger.LogError($"An error occurred while getting all dogs: {ex.Message}");
-                return StatusCode(500, "Internal server error");
+
+                throw new Exception(ex.Message);
             }
         }
 
-        // Hämta en hund med ett specifikt ID
+        // Get a dog by Id
         [HttpGet]
         [Route("getDogById/{dogId}")]
         public async Task<IActionResult> GetDogById(Guid dogId)
         {
+            var guidValidator = _guidValidator.Validate(dogId);
+
+            if (!guidValidator.IsValid)
+            {
+                return BadRequest(guidValidator.Errors.ConvertAll(errors => errors.ErrorMessage));
+            }
+
+            var dog = await _mediator.Send(new GetDogByIdQuery(dogId));
+
+            if (dog == null)
+            {
+                return NotFound();
+            }
+
             try
             {
-                _logger.LogInformation($"Getting dog with ID: {dogId}");
-                return Ok(await _mediator.Send(new GetDogByIdQuery(dogId)));
+                return Ok(dog);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"An error occurred while getting dog with ID {dogId}: {ex.Message}");
-                return StatusCode(500, "Internal server error");
+                throw new Exception(ex.Message);
             }
         }
 
-        // Skapa en ny hund
+        [HttpGet]
+        [Route("getDogsByWeightOrBreed")]
+        public async Task<IActionResult> GetAllDogsByWeight(int? weight, string? breed)
+        {
+            return Ok(await _mediator.Send(new GetDogsByWeightOrBreedQuery { Weight = weight, Breed = breed }));
+        }
+
+
+        // Create a new dog 
+        //[Authorize]
         [HttpPost]
         [Route("addNewDog")]
-        public async Task<IActionResult> AddDog([FromBody] DogDto newDog)
+        [ProducesResponseType(typeof(DogDto), StatusCodes.Status200OK)]
+        public async Task<IActionResult> AddDog([FromBody] DogDto newDog, Guid userId)
         {
+            var dogValidator = _dogValidator.Validate(newDog);
+
+            if (!dogValidator.IsValid)
+            {
+                return BadRequest(dogValidator.Errors.ConvertAll(errors => errors.ErrorMessage));
+            }
+
             try
             {
-                // Validera hunden
-                var validationResult = _dogValidator.Validate(newDog);
-                if (!validationResult.IsValid)
-                {
-                    _logger.LogWarning("Invalid data received while adding a new dog.");
-                    return BadRequest(validationResult.Errors);
-                }
-
-                _logger.LogInformation($"Adding a new dog: {newDog.Name}");
-                return Ok(await _mediator.Send(new AddDogCommand(newDog)));
+                return Ok(await _mediator.Send(new AddDogCommand(newDog, userId)));
             }
             catch (Exception ex)
             {
-                _logger.LogError($"An error occurred while adding a new dog: {ex.Message}");
-                return StatusCode(500, "Internal server error");
+                throw new Exception(ex.Message);
             }
         }
 
         // Update a specific dog
+        //[Authorize]
         [HttpPut]
-        [Route("updateDog/{dogId}")]
-        public async Task<IActionResult> UpdateDog(Guid dogId, [FromBody] DogDto updatedDog)
+        [Route("updateDog/{updateDogId}")]
+        public async Task<IActionResult> UpdateDog([FromBody] DogDto dogToUpdate, Guid updateDogId)
         {
+            var dogValidator = _dogValidator.Validate(dogToUpdate);
+
+            var guidValidator = _guidValidator.Validate(updateDogId);
+
+            if (!guidValidator.IsValid)
+            {
+                return BadRequest(guidValidator.Errors.ConvertAll(errors => errors.ErrorMessage));
+            }
+
+            if (!dogValidator.IsValid)
+            {
+                return BadRequest(dogValidator.Errors.ConvertAll(errors => errors.ErrorMessage));
+            }
+
             try
             {
-                // Validera hunden
-                var validationResult = _dogValidator.Validate(updatedDog);
-                if (!validationResult.IsValid)
-                {
-                    _logger.LogWarning("Invalid data received while updating a dog.");
-                    return BadRequest(validationResult.Errors);
-                }
+                var dog = await _mediator.Send(new UpdateDogByIdCommand(dogToUpdate, updateDogId));
 
-                _logger.LogInformation($"Updating dog with ID: {dogId}");
-                var command = new UpdateDogByIdCommand(updatedDog, dogId);
-                var result = await _mediator.Send(command);
-
-                if (result != null)
+                if (dog == null)
                 {
-                    return Ok(result);
+                    return NotFound($"Dog with Id:{updateDogId} does not exist in database");
                 }
-                else
-                {
-                    _logger.LogWarning($"Dog with ID {dogId} not found.");
-                    return NotFound("Dog not found.");
-                }
+                return Ok(dog);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"An error occurred while updating dog with ID {dogId}: {ex.Message}");
-                return StatusCode(500, "Internal server error");
+
+                throw new Exception(ex.Message);
             }
         }
 
-        // Radera en specifik hund
+        // Delete a specific dog
+        //[Authorize]
         [HttpDelete]
-        [Route("deleteDog/{dogId}")]
-        public async Task<IActionResult> DeleteDog(Guid dogId)
+        [Route("deleteDog/{deleteDogId}")]
+        public async Task<IActionResult> DeleteDog(Guid deleteDogId)
         {
+            var guidValidator = _guidValidator.Validate(deleteDogId);
+
+            if (!guidValidator.IsValid)
+            {
+                return BadRequest(guidValidator.Errors.ConvertAll(errors => errors.ErrorMessage));
+            }
+
             try
             {
-                // Validera ID
-                var validationResult = _guidValidator.Validate(dogId);
-                if (!validationResult.IsValid)
-                {
-                    _logger.LogWarning($"Invalid dog ID received: {dogId}");
-                    return BadRequest(validationResult.Errors);
-                }
-
-                _logger.LogInformation($"Deleting dog with ID: {dogId}");
-                var success = await _mediator.Send(new DeleteDogByIdCommand(dogId));
-
-                if (success)
-                {
-                    return Ok("Dog deleted successfully.");
-                }
-                else
-                {
-                    _logger.LogWarning($"Dog with ID {dogId} not found.");
-                    return NotFound("Dog not found.");
-                }
+                await _mediator.Send(new DeleteDogByIdCommand(deleteDogId));
             }
             catch (Exception ex)
             {
-                _logger.LogError($"An error occurred while deleting dog with ID {dogId}: {ex.Message}");
-                return StatusCode(500, "Internal server error");
-            }
-        }
 
-        // Hämta hundar med specifika egenskaper
-        [HttpGet]
-        [Route("getDogsByProperties")]
-        public async Task<IActionResult> GetDogsByProperties([FromQuery] GetDogsByPropertiesQuery query)
-        {
-            try
-            {
-                // Validera query
-                var validationResult = _getDogsByPropertiesValidator.Validate(query);
-                if (!validationResult.IsValid)
-                {
-                    _logger.LogWarning("Invalid query received for getting dogs by properties.");
-                    return BadRequest(validationResult.Errors);
-                }
+                throw new Exception(ex.Message);
+            }
 
-                _logger.LogInformation("Getting dogs by properties.");
-                var result = await _mediator.Send(query);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"An error occurred while getting dogs by properties: {ex.Message}");
-                return StatusCode(500, "Internal server error");
-            }
+            return NoContent();
         }
     }
 }
