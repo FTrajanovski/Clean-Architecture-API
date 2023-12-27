@@ -1,5 +1,10 @@
-﻿using Infrastructure.Database;
-using Microsoft.EntityFrameworkCore;
+﻿using Infrastructure.Authentication;
+using Infrastructure.Database;
+using Infrastructure.Repositories.Animals;
+using Infrastructure.Repositories.Birds;
+using Infrastructure.Repositories.Cats;
+using Infrastructure.Repositories.Dogs;
+using Infrastructure.Repositories.Users;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure
@@ -9,15 +14,13 @@ namespace Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services)
         {
             services.AddSingleton<MockDatabase>();
-<<<<<<< Updated upstream
-=======
-            services.AddDbContext<RealDatabase>(options =>
-            {
-                ;
-                string connectionString = "Server=localhost;Port=3306;Database=CleanAPI;User=root;Password=Kadino44;";
-                options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 35)));
-            });
->>>>>>> Stashed changes
+            services.AddSingleton<JwtTokenGenerator>();
+            services.AddScoped<IDogRepository, DogRepository>();
+            services.AddScoped<IBirdRepository, BirdRepository>();
+            services.AddScoped<ICatRepository, CatRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IAnimalRepository, AnimalRepository>();
+
             return services;
         }
     }
