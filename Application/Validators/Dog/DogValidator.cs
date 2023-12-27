@@ -1,8 +1,5 @@
-﻿
-
-using Application.Dtos;
+﻿using Application.Dtos;
 using FluentValidation;
-using System.Data;
 
 namespace Application.Validators.Dog
 {
@@ -10,8 +7,10 @@ namespace Application.Validators.Dog
     {
         public DogValidator()
         {
-            RuleFor(dog => dog.Name).NotEmpty().WithMessage("Dog Name can not be emptey")
-                                    .NotNull().WithMessage("Dog Name can not be NULL");
+            RuleFor(dog => dog.Name)
+                .NotEmpty().WithMessage("Dog name can not be empty")
+                .NotNull().WithMessage("Dog name cant be NULL");
         }
+
     }
 }

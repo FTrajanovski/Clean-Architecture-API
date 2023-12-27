@@ -1,18 +1,16 @@
 ﻿using FluentValidation;
-using System;
 
-public class GuidValidator : AbstractValidator<Guid>
+namespace Application.Validators
 {
-    public GuidValidator()
-    {
-        RuleFor(guid => guid)
-            .NotEmpty().WithMessage("Id cannot be empty").WithErrorCode("EmptyGuid")
-            .NotNull().WithMessage("Id cannot be null").WithErrorCode("NullGuid")
-            .Must(BeAValidGuid).WithMessage("Invalid Id format").WithErrorCode("InvalidGuid");
-    }
 
-    private bool BeAValidGuid(Guid guid)
+    public class GuidValidator : AbstractValidator<Guid>
     {
-        return guid != Guid.Empty;
+        public GuidValidator()
+        {
+            RuleFor(guid => guid).NotNull().WithMessage("Guid cant be NULL")
+                .NotEmpty().WithMessage("Guid cant be empty")
+                .NotEqual(Guid.Empty).WithMessage("Guid should not be empty");
+        }
+
     }
 }

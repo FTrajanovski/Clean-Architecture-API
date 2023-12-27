@@ -17,26 +17,26 @@ namespace Infrastructure.Database
         public virtual DbSet<Cat> Cats { get; set; }
         public virtual DbSet<Bird> Birds { get; set; }
         public virtual DbSet<User> Users { get; set; }
-        public virtual DbSet<UserAnimal> UserAnimals { get; set; }
+        public virtual DbSet<UserAnimalModel> UserAnimals { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             // Primärnyckeldefinition för UserAnimal
-            modelBuilder.Entity<UserAnimal>()
+            modelBuilder.Entity<UserAnimalModel>()
                 .HasKey(ua => new { ua.UserId, ua.AnimalId });
 
             // Övriga konfigurationer...
 
             // Exempel: Konfigurera förhållandet mellan UserAnimal och User
-            modelBuilder.Entity<UserAnimal>()
+            modelBuilder.Entity<UserAnimalModel>()
                 .HasOne(ua => ua.User)
                 .WithMany(u => u.UserAnimals)
                 .HasForeignKey(ua => ua.UserId);
 
             // Exempel: Konfigurera förhållandet mellan UserAnimal och AnimalModel
-            modelBuilder.Entity<UserAnimal>()
+            modelBuilder.Entity<UserAnimalModel>()
                 .HasOne(ua => ua.Animal)
                 .WithMany()
                 .HasForeignKey(ua => ua.AnimalId);

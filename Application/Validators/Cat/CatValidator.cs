@@ -7,9 +7,11 @@ namespace Application.Validators.Cat
     {
         public CatValidator()
         {
-            RuleFor(cat => cat.Name).NotEmpty().WithMessage("Cat Name cannot be empty")
-                                    .NotNull().WithMessage("Cat Name cannot be NULL");
-            // Add other validation rules for CatDto properties
+            RuleFor(cat => cat.Name).NotEmpty().WithMessage("Cat name cant be empty")
+                .NotNull().WithMessage("Cat name cant be NULL");
+
+            RuleFor(cat => cat.LikesToPlay).NotEmpty().WithMessage("LikesToPlay cant be empty")
+                .NotNull().WithMessage("LikesToPlay cant be NULL");
         }
     }
 }

@@ -1,5 +1,5 @@
-﻿using FluentValidation;
-using Application.Dtos;
+﻿using Application.Dtos;
+using FluentValidation;
 
 namespace Application.Validators.Bird
 {
@@ -7,11 +7,11 @@ namespace Application.Validators.Bird
     {
         public BirdValidator()
         {
-            RuleFor(bird => bird.Name).NotEmpty().WithMessage("Bird Name cannot be empty")
-                                       .NotNull().WithMessage("Bird Name cannot be NULL");
+            RuleFor(bird => bird.Name).NotEmpty().WithMessage("Bird name cant be empty")
+                .NotNull().WithMessage("Bird name cant be NULL");
 
-            RuleFor(bird => bird.Color).NotEmpty().WithMessage("Bird Color cannot be empty")
-                                        .MaximumLength(50).WithMessage("Bird Color length cannot exceed 50 characters");
+            RuleFor(bird => bird.CanFly).NotEmpty().WithMessage("CanFly cant be empty")
+                .NotNull().WithMessage("CanFly cant be NULL");
         }
     }
 }
