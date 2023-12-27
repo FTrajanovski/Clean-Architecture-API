@@ -1,7 +1,7 @@
 ﻿using Application.Queries.Birds.GetBirdsByColor;
 using FluentValidation;
 
-public class GetBirdsByColorValidator : AbstractValidator<GetBirdsByColorQuery>
+public class GetBirdsByColorValidator : AbstractValidator<GetAllBirdsWithColorQuery>
 {
     public GetBirdsByColorValidator()
     {
