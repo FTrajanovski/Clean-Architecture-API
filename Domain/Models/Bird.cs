@@ -1,13 +1,13 @@
 ﻿using Domain.Models.Animal;
-
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Models
 {
-    //Ärver ifrån AnimalModel
+    [Table("Bird")]
     public class Bird : AnimalModel
     {
         public bool CanFly { get; set; }
-        public string? Color { get; set; }
 
+        public required string Color { get; set; }
     }
 }
