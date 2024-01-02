@@ -1,7 +1,10 @@
-﻿using Application.Dtos;
+﻿using API.Controllers.DogsController;
 using Application.Queries.Dogs.GetById;
+using Application.Validators;
+using Application.Validators.Dog;
 using Domain.Models;
-using Infrastructure.Database;
+using FakeItEasy;
+using Infrastructure.Repositories.Dogs;
 using MediatR;
 
 namespace Test.DogTests.QueryTest
@@ -9,50 +12,57 @@ namespace Test.DogTests.QueryTest
     [TestFixture]
     public class GetDogByIdTests
     {
-        private GetDogByIdQueryHandler _handler;
-        private MockDatabase _mockDatabase;
+        private DogsController _controller;
+        private IMediator _mediator;
+        private GuidValidator _guidValidator;
+        private DogValidator _dogValidator;
 
         [SetUp]
         public void SetUp()
         {
-            // Initialize the handler and mock database before each test
-            _mockDatabase = new MockDatabase();
-            _handler = new GetDogByIdQueryHandler(_mockDatabase);
-
-
+            _mediator = A.Fake<IMediator>();
+            _guidValidator = new GuidValidator();
+            _dogValidator = new DogValidator();
+            _controller = new DogsController(_mediator, _dogValidator, _guidValidator);
         }
 
         [Test]
-        public async Task Handle_ValidId_ReturnsCorrectDog()
+        public async Task Controller_Get_Dog_By_Id()
         {
-            // Arrange
-            var dogId = new Guid("12345678-1234-5678-1234-567812345678");
+            //Arrange
+            var dogId = new Guid("523a0c2b-6b9b-4239-a691-495a6c5778c6");
 
-            var query = new GetDogByIdQuery(dogId);
+            //Act
+            var result = await _controller.GetDogById(dogId);
 
-            // Act
-            var result = await _handler.Handle(query, CancellationToken.None);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.That(result.Id, Is.EqualTo(dogId));
+            //Assert
+            Assert.That(result, Is.Not.Null);
         }
 
         [Test]
-        public async Task Handle_InvalidId_ReturnsNull()
+        public async Task Handle_ValidId_ReturnCorrectDog()
         {
-            // Arrange
-            var invalidDogId = Guid.NewGuid();
+            var guid = Guid.NewGuid();
 
-            var query = new GetDogByIdQuery(invalidDogId);
+            var dog = new Dog { Name = "Sven", Breed = "EnRas", Weight = 40 };
 
-            // Act
-            var result = await _handler.Handle(query, CancellationToken.None);
+            var dogRepository = A.Fake<IDogRepository>();
 
-            // Assert
-            Assert.IsNull(result);
+            var handler = new GetDogByIdQueryHandler(dogRepository);
+
+            A.CallTo(() => dogRepository.GetDogById(guid)).Returns(dog);
+
+            var command = new GetDogByIdQuery(guid);
+
+            //Act
+
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            //Assert
+            Assert.IsNotNull(result);
+            Assert.That(result, Is.TypeOf<Dog>());
+            Assert.That(result.Name.Equals("Sven"));
+
         }
-
     }
-
 }

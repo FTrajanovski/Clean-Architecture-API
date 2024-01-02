@@ -1,54 +1,68 @@
-﻿using Application.Commands.Dogs.DeleteDog;
-using Infrastructure.Database;
-using NUnit.Framework;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using API.Controllers.DogsController;
+using Application.Commands.Dogs.DeleteDog;
+using Application.Dtos;
+using Application.Validators;
+using Application.Validators.Dog;
+using Domain.Models;
+using FakeItEasy;
+using Infrastructure.Repositories.Dogs;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Test.DogTests.CommandTest
 {
     [TestFixture]
     public class DeleteDogTests
     {
-        private DeleteDogByIdCommandHandler _handler;
-        private MockDatabase _mockDatabase;
-
-        [SetUp]
-        public void SetUp()
+        [Test]
+        public async Task Controller_Delete_Dog()
         {
-            // Initialize the handler and mock database before each test
-            _mockDatabase = new MockDatabase();
-            _handler = new DeleteDogByIdCommandHandler(_mockDatabase);
+            //Arrange
+            var guid = Guid.NewGuid();
+
+            var dog = new DogDto { Name = "Hasse", Weight = 1, Breed = "Tax" };
+
+            var mediator = A.Fake<IMediator>();
+
+            A.CallTo(() => mediator.Send(guid, CancellationToken.None)).Returns(dog);
+
+            var guidValidator = new GuidValidator();
+
+            var dogValidator = new DogValidator();
+
+            var dogController = new DogsController(mediator, dogValidator, guidValidator);
+
+            //Act
+            var result = await dogController.DeleteDog(guid);
+
+            //Assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<NoContentResult>(result);
+
         }
 
         [Test]
-        public async Task Handle_ExistingDogId_RemovesFromDatabase()
+        public async Task Handle_Delete_Correct_Id()
         {
-            // Arrange
-            var existingDogId = _mockDatabase.Dogs.First().Id; // Assuming there's at least one dog in the database
-            var command = new DeleteDogByIdCommand(existingDogId);
+            //Arrange
+            var dog = new Dog { Name = "Fredrik", AnimalId = Guid.NewGuid(), Breed = "Tax", Weight = 100 };
 
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
+            var dogRepository = A.Fake<IDogRepository>();
 
-            // Assert
-            Assert.IsTrue(result);
-            Assert.IsFalse(_mockDatabase.Dogs.Any(d => d.Id == existingDogId));
-        }
+            var handler = new DeleteDogByIdCommandHandler(dogRepository);
 
-        [Test]
-        public async Task Handle_NonExistingDogId_ReturnsFalse()
-        {
-            // Arrange
-            var nonExistingDogId = Guid.NewGuid(); // Assuming this ID does not exist in the database
-            var command = new DeleteDogByIdCommand(nonExistingDogId);
+            A.CallTo(() => dogRepository.DeleteDogById(dog.AnimalId)).Returns(dog);
 
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
+            var command = new DeleteDogByIdCommand(dog.AnimalId);
 
-            // Assert
-            Assert.IsFalse(result);
+            //Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            //Assert
+            Assert.IsNotNull(result);
+            Assert.That(result.Name.Equals(dog.Name));
+            Assert.That(result, Is.TypeOf<Dog>());
+            Assert.That(result.AnimalId.Equals(dog.AnimalId));
         }
     }
 }

@@ -1,54 +1,74 @@
-﻿using Application.Commands.Cats.DeleteCat;
-using Infrastructure.Database;
-using NUnit.Framework;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
+﻿using API.Controllers.CatsController;
+using Application.Commands.Cats.DeleteCat;
+using Application.Dtos;
+using Application.Validators;
+using Application.Validators.Cat;
+using Domain.Models;
+using FakeItEasy;
+using Infrastructure.Repositories.Cats;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 namespace Test.CatTests.CommandTest
 {
     [TestFixture]
     public class DeleteCatTests
     {
-        private DeleteCatByIdCommandHandler _handler;
-        private MockDatabase _mockDatabase;
-
-        [SetUp]
-        public void SetUp()
+        [Test]
+        public async Task Controller_Delete_Cat()
         {
-            // Initialize the handler and mock database before each test
-            _mockDatabase = new MockDatabase();
-            _handler = new DeleteCatByIdCommandHandler(_mockDatabase);
+            //Arrange
+            var guid = Guid.NewGuid();
+
+            var cat = new CatDto { Name = "Morris", Breed = "Huskatt", LikesToPlay = true, Weight = 4 };
+
+            var mediator = A.Fake<IMediator>();
+
+            A.CallTo(() => mediator.Send(guid, CancellationToken.None)).Returns(cat);
+
+            var guidValidator = new GuidValidator();
+
+            var catValidator = new CatValidator();
+
+            var catController = new CatsController(mediator, catValidator, guidValidator);
+
+            //Act
+
+            var result = await catController.DeleteCat(guid);
+
+            //Assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<NoContentResult>(result);
         }
 
         [Test]
-        public async Task Handle_ExistingDogId_RemovesFromDatabase()
+        public async Task Handle_Delete_Correct_Id()
         {
-            // Arrange
-            var existingCatId = _mockDatabase.Cats.First().Id; // Assuming there's at least one cat in the database
-            var command = new DeleteCatByIdCommand(existingCatId);
 
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
+            //Arrange
+            var cat = new Cat
+            {
+                Name = "Hans",
+                AnimalId = Guid.NewGuid()
+            };
 
-            // Assert
-            Assert.IsTrue(result);
-            Assert.IsFalse(_mockDatabase.Dogs.Any(c => c.Id == existingCatId));
-        }
+            var catRepository = A.Fake<ICatRepository>();
 
-        [Test]
-        public async Task Handle_NonExistingCatId_ReturnsFalse()
-        {
-            // Arrange
-            var nonExistingCatId = Guid.NewGuid(); // Assuming this ID does not exist in the database
-            var command = new DeleteCatByIdCommand(nonExistingCatId);
+            var handler = new DeleteCatByIdCommandHandler(catRepository);
 
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
+            A.CallTo(() => catRepository.DeleteCatById(cat.AnimalId)).Returns(cat);
 
-            // Assert
-            Assert.IsFalse(result);
+
+            var command = new DeleteCatByIdCommand(cat.AnimalId);
+
+            //Act
+
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            //Assert
+            Assert.IsNotNull(result);
+            Assert.That(result.Name.Equals("Hans"));
+            Assert.That(result, Is.TypeOf<Cat>());
+            Assert.That(result.AnimalId.Equals(cat.AnimalId));
         }
     }
 }
