@@ -1,54 +1,68 @@
-﻿using Application.Commands.Birds.DeleteBird;
-using Infrastructure.Database;
-using NUnit.Framework;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using API.Controllers.BirdsController;
+using Application.Commands.Birds.DeleteBird;
+using Application.Dtos;
+using Application.Validators;
+using Application.Validators.Bird;
+using Domain.Models;
+using FakeItEasy;
+using Infrastructure.Repositories.Birds;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Test.BirdTests.CommandTest
 {
     [TestFixture]
     public class DeleteBirdTests
     {
-        private DeleteBirdByIdCommandHandler _handler;
-        private MockDatabase _mockDatabase;
-
-        [SetUp]
-        public void SetUp()
+        [Test]
+        public async Task Controller_Delete_Bird()
         {
-            // Initialize the handler and mock database before each test
-            _mockDatabase = new MockDatabase();
-            _handler = new DeleteBirdByIdCommandHandler(_mockDatabase);
+            //Arrange
+            var guid = Guid.NewGuid();
+
+            var bird = new BirdDto { Name = "Hasse", CanFly = true, Color = "Green" };
+
+            var mediator = A.Fake<IMediator>();
+
+            A.CallTo(() => mediator.Send(guid, CancellationToken.None)).Returns(bird);
+
+            var guidValidator = new GuidValidator();
+
+            var birdValidator = new BirdValidator();
+
+            var birdController = new BirdsController(mediator, birdValidator, guidValidator);
+
+            //Act
+            var result = await birdController.DeleteBird(guid);
+
+            //Assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<NoContentResult>(result);
+
         }
 
         [Test]
-        public async Task Handle_ExistingBirdId_RemovesFromDatabase()
+        public async Task Handle_Delete_Correct_Id()
         {
-            // Arrange
-            var existingBirdId = _mockDatabase.Birds.First().Id; // Assuming there's at least one bird in the database
-            var command = new DeleteBirdCommand(existingBirdId);
+            //Arrange
+            var bird = new Bird { Name = "Kaja", Color = "Red", AnimalId = Guid.NewGuid(), CanFly = true };
 
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
+            var birdRepository = A.Fake<IBirdRepository>();
 
-            // Assert
-            Assert.IsTrue(result);
-            Assert.IsFalse(_mockDatabase.Birds.Any(b => b.Id == existingBirdId));
-        }
+            var handler = new DeleteBirdByIdCommandHandler(birdRepository);
 
-        [Test]
-        public async Task Handle_NonExistingBirdId_ReturnsFalse()
-        {
-            // Arrange
-            var nonExistingCatId = Guid.NewGuid(); // Assuming this ID does not exist in the database
-            var command = new DeleteBirdCommand(nonExistingCatId);
+            A.CallTo(() => birdRepository.DeleteBirdById(bird.AnimalId)).Returns(bird);
 
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
+            var command = new DeleteBirdByIdCommand(bird.AnimalId);
 
-            // Assert
-            Assert.IsFalse(result);
+            //Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            //Assert
+            Assert.IsNotNull(result);
+            Assert.That(result.Name.Equals("Kaja"));
+            Assert.That(result, Is.TypeOf<Bird>());
+            Assert.That(result.AnimalId.Equals(bird.AnimalId));
         }
     }
 }

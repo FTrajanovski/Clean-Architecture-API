@@ -1,44 +1,78 @@
-﻿using Application.Commands.Birds.AddBird;
+﻿using API.Controllers.BirdsController;
+using Application.Commands.Birds.AddBird;
 using Application.Dtos;
-using Infrastructure.Database;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Application.Validators;
+using Application.Validators.Bird;
+using Domain.Models;
+using FakeItEasy;
+using Infrastructure.Repositories.Birds;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
-namespace Test.BirdTests.QueryTest
+namespace Test.BirdTests.CommandTest
 {
     [TestFixture]
     public class AddBirdTests
     {
-        private AddBirdCommandHandler _handler;
-        private MockDatabase _mockDatabase;
-
-        [SetUp]
-        public void SetUp()
-        {
-            // Initera handler och mockdatabasen inför varje test
-            _mockDatabase = new MockDatabase();
-            _handler = new AddBirdCommandHandler(_mockDatabase);
-        }
 
         [Test]
-        public async Task Handle_ValidData_AddsToDatabase()
+        public async Task Contoller_AddBird()
         {
-            // Arrange
-            var newBirdDto = new BirdDto { Name = "Flaxi" };
-            var command = new AddBirdCommand(newBirdDto);
+            //Arrange
+            var guid = Guid.NewGuid();
 
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
+            var userId = Guid.NewGuid();
 
-            // Assert
-            Assert.NotNull(result);
-            Assert.That(result.Name, Is.EqualTo(newBirdDto.Name));
+            var bird = new BirdDto { Name = "Hans", CanFly = true, Color = "Green" };
 
-            // Kontrollera om fågeln har lagts till i databasen
-            Assert.Contains(result, _mockDatabase.Birds);
+            var mediator = A.Fake<IMediator>();
+
+            A.CallTo(() => mediator.Send(guid, CancellationToken.None)).Returns(bird);
+
+            var guidValidator = new GuidValidator();
+
+            var birdValidator = new BirdValidator();
+
+            var birdController = new BirdsController(mediator, birdValidator, guidValidator);
+
+            //Act
+
+            var result = await birdController.AddBird(bird, userId);
+
+            //Assert
+
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<OkObjectResult>(result);
+
+        }
+
+
+        [Test]
+        public async Task Handler_AddBird()
+        {
+            //Arrange
+            var guid = Guid.NewGuid();
+
+            var bird = new Bird { AnimalId = guid, Name = "Pelle", Color = "Green" };
+
+            var birdDto = new BirdDto { Name = bird.Name, Color = bird.Color, CanFly = true };
+
+            var birdRepository = A.Fake<IBirdRepository>();
+
+            var handler = new AddBirdCommandHandler(birdRepository);
+
+            A.CallTo(() => birdRepository.AddBird(bird, guid)).Returns(bird);
+
+            var command = new AddBirdCommand(birdDto, guid);
+
+            //Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            //Assert
+            Assert.IsNotNull(result);
+            Assert.That(result, Is.TypeOf<Bird>());
+            Assert.That(result.Name.Equals("Pelle"));
+
         }
     }
 }

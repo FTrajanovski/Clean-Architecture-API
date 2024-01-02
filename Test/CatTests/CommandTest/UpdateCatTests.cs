@@ -1,44 +1,77 @@
-﻿using Application.Commands.Cats.UpdateCat;
+﻿using API.Controllers.CatsController;
+using Application.Commands.Cats.UpdateCat;
 using Application.Dtos;
-using Infrastructure.Database;
-using NUnit.Framework;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
+using Application.Validators;
+using Application.Validators.Cat;
+using Domain.Models;
+using FakeItEasy;
+using Infrastructure.Repositories.Cats;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 namespace Test.CatTests.CommandTest
 {
     [TestFixture]
     public class UpdateCatTests
     {
-        private UpdateCatByIdCommandHandler _handler;
-        private MockDatabase _mockDatabase;
-
-        [SetUp]
-        public void SetUp()
+        [Test]
+        public async Task Controller_Update_Cat()
         {
-            // Initialize the handler and mock database before each test
-            _mockDatabase = new MockDatabase();
-            _handler = new UpdateCatByIdCommandHandler(_mockDatabase);
+            //Arrange
+            var guid = Guid.NewGuid();
+
+            var userId = Guid.NewGuid();
+
+            var cat = new CatDto { Name = "Morris", Breed = "Huskatt", LikesToPlay = true, Weight = 4 };
+
+            var mediator = A.Fake<IMediator>();
+
+            A.CallTo(() => mediator.Send(guid, CancellationToken.None)).Returns(cat);
+
+            var guidValidator = new GuidValidator();
+
+            var catValidator = new CatValidator();
+
+            var catController = new CatsController(mediator, catValidator, guidValidator);
+
+            //Act
+
+            var result = await catController.UpdateCatById(cat, guid);
+
+            //Assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<OkObjectResult>(result);
         }
 
-
         [Test]
-        public async Task Handle_ExistingCatId_UpdatesName()
+        public async Task Handle_Update_Correct_Cat_By_Id()
         {
-            // Arrange
-            var existingCatId = _mockDatabase.Cats.First().Id; // Assuming there's at least one cat in the database
-            var updatedCatDto = new CatDto { Name = "UpdatedName" };
-            var command = new UpdateCatByIdCommand(updatedCatDto, existingCatId);
+            //Arrange
 
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
+            var guid = new Guid("ce9b91e4-08d1-4628-82c1-8ef6ec622220");
 
-            // Assert
-            Assert.NotNull(result);
-            Assert.That(result.Name, Is.EqualTo(updatedCatDto.Name));
-            Assert.That(result.Id, Is.EqualTo(existingCatId));
+            var cat = new Cat { AnimalId = new Guid("ce9b91e4-08d1-4628-82c1-8ef6ec622220"), Name = "Hans", LikesToPlay = true };
+
+            var catDto = new CatDto { Name = "Carl", LikesToPlay = true };
+
+            var catRepository = A.Fake<ICatRepository>();
+
+            var handler = new UpdateCatByIdCommandHandler(catRepository);
+
+            A.CallTo(() => catRepository.GetCatById(cat.AnimalId)).Returns(cat);
+
+            A.CallTo(() => catRepository.UpdateCat(cat)).Returns(cat);
+
+            var command = new UpdateCatByIdCommand(catDto, guid);
+
+            //Act
+
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            //Assert
+            Assert.IsNotNull(result);
+            Assert.That(result.Name.Equals("Carl"));
+            Assert.That(result.LikesToPlay.Equals(true));
+            Assert.That(result, Is.TypeOf<Cat>());
         }
     }
 }

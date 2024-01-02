@@ -1,44 +1,79 @@
-﻿using Application.Commands.Cats.AddCat;
+﻿using API.Controllers.CatsController;
+using Application.Commands.Cats.AddCat;
 using Application.Dtos;
-using Infrastructure.Database;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using Application.Validators;
+using Application.Validators.Cat;
+using Domain.Models;
+using FakeItEasy;
+using Infrastructure.Repositories.Cats;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 namespace Test.CatTests.CommandTest
 {
     [TestFixture]
     public class AddCatTests
     {
-        private AddCatCommandHandler _handler;
-        private MockDatabase _mockDatabase;
 
-        [SetUp]
-        public void SetUp()
+        [Test]
+        public async Task Controller_Add_Cat()
         {
-            // Initialize the handler and mock database before each test
-            _mockDatabase = new MockDatabase();
-            _handler = new AddCatCommandHandler(_mockDatabase);
+            //Arrange
+            var guid = Guid.NewGuid();
+
+            var userId = Guid.NewGuid();
+
+            var cat = new CatDto { Name = "Morris", Breed = "Huskatt", LikesToPlay = true, Weight = 4 };
+
+            var mediator = A.Fake<IMediator>();
+
+            A.CallTo(() => mediator.Send(guid, CancellationToken.None)).Returns(cat);
+
+            var guidValidator = new GuidValidator();
+
+            var catValidator = new CatValidator();
+
+            var catController = new CatsController(mediator, catValidator, guidValidator);
+
+            //Act
+            var result = await catController.AddCat(cat, userId);
+
+            //Assert
+            Assert.IsNotNull(result);
+            Assert.IsInstanceOf<OkObjectResult>(result);
         }
 
         [Test]
-        public async Task Handle_ValidData_AddsToDatabase()
+        public async Task Handle_Add_Cat()
         {
-            // Arrange
-            var newCatDto = new CatDto { Name = "Kattis" };
-            var command = new AddCatCommand(newCatDto);
+            //Arrange
+            var cat = new Cat { Name = "Herman" };
+            var requestGuid = Guid.NewGuid();
 
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
+            var catRepository = A.Fake<ICatRepository>();
 
-            // Assert
-            Assert.NotNull(result);
-            Assert.That(result.Name, Is.EqualTo(newCatDto.Name));
+            var handler = new AddCatCommandHandler(catRepository);
 
-            // Check if the cat was added to the database
-            Assert.Contains(result, _mockDatabase.Cats);
+            A.CallTo(() => catRepository.AddCat(cat, requestGuid)).Returns(cat);
+
+            var catName = "Herman";
+
+            var dto = new CatDto();
+
+            dto.Name = catName;
+            dto.Breed = "Huskatt";
+            dto.Weight = 1;
+
+            var command = new AddCatCommand(dto, requestGuid);
+
+            //Act
+
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            //Assert
+            Assert.IsNotNull(result);
+            Assert.That(result.Name.Equals("Herman"));
+            Assert.That(result, Is.TypeOf<Cat>());
         }
+
     }
 }
