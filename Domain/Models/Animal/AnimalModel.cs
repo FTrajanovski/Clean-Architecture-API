@@ -7,6 +7,6 @@ namespace Domain.Models.Animal
     {
         [Key]
         public Guid AnimalId { get; set; }
-        public required string Name { get; set; }
+        public string Name { get; set; }
     }
 }

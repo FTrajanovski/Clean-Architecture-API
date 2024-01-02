@@ -1,20 +1,15 @@
-﻿using Application.Dtos;
-using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MediatR;
 
-namespace Application.Queries.User.GetToken
+namespace Application.Queries.Users.GetToken
 {
-    public class GetUserByIdQuery : IRequest<UserDto>
+    public class GetUserTokenQuery : IRequest<string>
     {
-        public Guid UserId { get; }
-
-        public GetUserByIdQuery(Guid userId)
+        public GetUserTokenQuery(string username, string password)
         {
-            UserId = userId;
+            Username = username;
+            Password = password;
         }
+        public string Username { get; }
+        public string Password { get; }
     }
 }
