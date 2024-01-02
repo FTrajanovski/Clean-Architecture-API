@@ -1,4 +1,4 @@
-﻿using Domain.Models.UserAnimalModel;
+﻿using Domain.Models.UserAnimal;
 using Infrastructure.Database.SqlServer;
 using Infrastructure.Repositories.Animals;
 using Infrastructure.Repositories.Dogs;

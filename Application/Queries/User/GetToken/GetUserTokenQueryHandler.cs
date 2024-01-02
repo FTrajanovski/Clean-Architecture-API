@@ -1,4 +1,5 @@
-﻿using Infrastructure.Repositories.Users;
+﻿using Application.Queries.Users.GetToken;
+using Infrastructure.Repositories.Users;
 using MediatR;
 
 namespace Application.Queries.User.GetToken

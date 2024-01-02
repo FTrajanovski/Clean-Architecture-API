@@ -1,4 +1,5 @@
-﻿using Domain.Models.UserAnimalModel;
+﻿
+using Domain.Models.UserAnimal;
 using Infrastructure.Repositories.Animals;
 using MediatR;
 

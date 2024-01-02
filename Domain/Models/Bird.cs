@@ -8,6 +8,6 @@ namespace Domain.Models
     {
         public bool CanFly { get; set; }
 
-        public required string Color { get; set; }
+        public string Color { get; set; }
     }
 }

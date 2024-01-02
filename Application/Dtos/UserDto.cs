@@ -2,11 +2,11 @@
 {
     public class UserDto
     {
-        public required string UserName { get; set; }
-        public required string Password { get; set; }
+        public string UserName { get; set; }
+        public string Password { get; set; }
 
-        public required string Role { get; set; }
-        public required bool Authorized { get; set; }
+        public string Role { get; set; }
+        public bool Authorized { get; set; }
 
     }
 }
